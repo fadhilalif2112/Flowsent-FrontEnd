@@ -73,17 +73,29 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
         onClick={(e) => e.stopPropagation()}
       />
 
-      {/* Star button */}
-      <button
-        onClick={handleStarToggle}
-        className="text-gray-300 hover:text-yellow-500 transition-colors group-hover:text-gray-400 flex-shrink-0 mt-1 md:mt-0"
-      >
-        {isStarred ? (
-          <Star className="w-4 h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
-        ) : (
-          <Star className="w-4 h-4 md:w-5 md:h-5" />
-        )}
-      </button>
+      <div className="flex flex-col items-center space-y-1">
+        {/* Star button */}
+        <button
+          onClick={handleStarToggle}
+          className="text-gray-300 hover:text-yellow-500 transition-colors group-hover:text-gray-400 flex-shrink-0 mt-1 md:mt-0"
+        >
+          {isStarred ? (
+            <Star className="w-4 h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
+          ) : (
+            <Star className="w-4 h-4 md:w-5 md:h-5" />
+          )}
+        </button>
+
+        {/* Mobile Checkbox */}
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect(email.id)}
+          className="block md:hidden w-4 h-4 mt-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          onClick={(e) => e.stopPropagation()}
+          title="Select"
+        />
+      </div>
 
       {/* Main content */}
       <div className="flex-1 min-w-0">
@@ -137,7 +149,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
           {showMobileActions && (
             <div className="mt-2 bg-gray-50 rounded-lg p-2 flex items-center justify-around border">
               <button
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
                 title="Archive"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -151,27 +163,12 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
                 <Trash2 className="w-4 h-4" />
               </button>
               <button
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
                 title="Mark as read"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Mail className="w-4 h-4" />
               </button>
-              <button
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
-                title="Snooze"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Clock className="w-4 h-4" />
-              </button>
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => onToggleSelect(email.id)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                onClick={(e) => e.stopPropagation()}
-                title="Select"
-              />
             </div>
           )}
         </div>

@@ -15,7 +15,10 @@ function App() {
     <Router>
       <MainLayout>
         <Routes>
+          {/* route if page not found */}
           <Route path="*" element={<NotFound />} />
+
+          {/* Main Routes */}
           <Route path="/" element={<InboxPage />} />
           <Route path="/inbox" element={<InboxPage />} />
           <Route path="/archive" element={<ArchivePage />} />

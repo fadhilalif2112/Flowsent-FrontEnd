@@ -1,5 +1,5 @@
 import React from "react";
-import EmailLayout from "../components/email/EmailLayout";
+import EmailLayout from "../components/layout/EmailLayout";
 import { sentEmails } from "../data/sampleEmails";
 
 const SentPage = () => {

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import EmailToolbar from "./EmailToolbar";
-import EmailList from "./EmailList";
+import EmailList from "../email/EmailList";
 
 const EmailLayout = ({ folderName, emails }) => {
   const [selectedEmails, setSelectedEmails] = useState([]);
@@ -10,7 +9,9 @@ const EmailLayout = ({ folderName, emails }) => {
     if (selectAll) {
       setSelectedEmails([]);
     } else {
-      setSelectedEmails(emails.map((email) => email.id));
+      const allIds = emails.map((email) => email.id);
+      setSelectedEmails(allIds);
+      console.log(allIds);
     }
     setSelectAll(!selectAll);
   };
@@ -22,24 +23,21 @@ const EmailLayout = ({ folderName, emails }) => {
         : [...prev, emailId];
 
       setSelectAll(newSelection.length === emails.length);
+      console.log(newSelection);
       return newSelection;
     });
   };
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Toolbar */}
-      <EmailToolbar
-        selectedCount={selectedEmails.length}
-        selectAll={selectAll}
-        onSelectAll={toggleSelectAll}
-      />
-
-      {/* List */}
+      {/* List Email */}
       <EmailList
         emails={emails}
         selectedEmails={selectedEmails}
         onToggleSelect={toggleEmailSelection}
+        selectedCount={selectedEmails.length}
+        selectAll={selectAll}
+        onSelectAll={toggleSelectAll}
       />
     </div>
   );
