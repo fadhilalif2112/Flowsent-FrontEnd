@@ -9,16 +9,35 @@ import StarredPage from "./pages/StarredPage";
 import TrashPage from "./pages/TrashPage";
 import "./App.css";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/LoginPage";
+import GuestRoute from "./components/auth/GuestRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { EmailProvider } from "./context/EmailContext";
 
 function App() {
   return (
     <Router>
-      <MainLayout>
-        <Routes>
-          {/* route if page not found */}
-          <Route path="*" element={<NotFound />} />
+      <Routes>
+        {/* Login hanya bisa diakses kalau belum login */}
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <LoginPage />
+            </GuestRoute>
+          }
+        />
 
-          {/* Main Routes */}
+        {/* Routes yang butuh login + email data */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <EmailProvider>
+                <MainLayout />
+              </EmailProvider>
+            </ProtectedRoute>
+          }
+        >
           <Route path="/" element={<InboxPage />} />
           <Route path="/inbox" element={<InboxPage />} />
           <Route path="/archive" element={<ArchivePage />} />
@@ -26,8 +45,11 @@ function App() {
           <Route path="/sent" element={<SentPage />} />
           <Route path="/starred" element={<StarredPage />} />
           <Route path="/trash" element={<TrashPage />} />
-        </Routes>
-      </MainLayout>
+
+          {/* Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
     </Router>
   );
 }

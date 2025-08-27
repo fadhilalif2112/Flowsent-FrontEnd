@@ -1,9 +1,9 @@
 import React from "react";
 import EmailLayout from "../components/layout/EmailLayout";
-import { inboxEmail } from "../data/sampleEmails";
 
 const InboxPage = () => {
-  return <EmailLayout folderName="inbox" emails={inboxEmail} />;
+  // Pass folder name to EmailLayout, which will handle API calls
+  return <EmailLayout folderName="inbox" />;
 };
 
 export default InboxPage;

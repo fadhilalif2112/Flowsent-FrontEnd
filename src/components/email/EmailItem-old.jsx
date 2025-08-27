@@ -1,16 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Star,
   Archive,
   Trash2,
   Mail,
+  Clock,
   FileText,
   MoreVertical,
-  Download,
 } from "lucide-react";
+import { useState } from "react";
 
+// Email Item Component
 const EmailItem = ({ email, isSelected, onToggleSelect }) => {
-  const [isStarred, setIsStarred] = useState(email.flagged); // flagged dari backend
+  const [isStarred, setIsStarred] = useState(email.starred);
   const [isHovered, setIsHovered] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
 
@@ -26,31 +28,39 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
 
   const formatTime = (timestamp) => {
     try {
-      // Format: "22 August 2025, 14:39 GMT+0700"
+      // Parse the timestamp format: "14 August 2025, 17:47 GMT+0700"
       const emailDate = new Date(timestamp.replace(" GMT+0700", " +0700"));
       const now = new Date();
       const diffInHours = (now - emailDate) / (1000 * 60 * 60);
 
-      if (diffInHours < 1) return "now";
-      if (diffInHours < 24) return `${Math.floor(diffInHours)}h`;
-      const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays < 7) return `${diffInDays}d`;
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-      return `${months[emailDate.getMonth()]} ${emailDate.getDate()}`;
-    } catch {
+      if (diffInHours < 1) {
+        return "now";
+      } else if (diffInHours < 24) {
+        return `${Math.floor(diffInHours)}h`;
+      } else {
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays < 7) {
+          return `${diffInDays}d`;
+        } else {
+          const months = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+          return `${months[emailDate.getMonth()]} ${emailDate.getDate()}`;
+        }
+      }
+    } catch (error) {
+      // Fallback if date parsing fails
       return timestamp.split(",")[0] || "Unknown";
     }
   };
@@ -59,16 +69,16 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
     <div
       className={`
         px-3 md:px-6 py-3 md:py-4 hover:bg-gray-50 cursor-pointer transition-colors flex items-start md:items-center space-x-2 md:space-x-4 group border-b border-gray-100
-        ${!email.seen ? "bg-white" : "bg-white"}
+        ${!email.read ? "bg-white" : "bg-white"}
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Checkbox - Hidden on mobile */}
+      {/* Checkbox - Hidden on mobile by default */}
       <input
         type="checkbox"
         checked={isSelected}
-        onChange={() => onToggleSelect(email.uid)}
+        onChange={() => onToggleSelect(email.id)}
         className="hidden md:block w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
         onClick={(e) => e.stopPropagation()}
       />
@@ -90,7 +100,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={() => onToggleSelect(email.uid)}
+          onChange={() => onToggleSelect(email.id)}
           className="block md:hidden w-4 h-4 mt-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           onClick={(e) => e.stopPropagation()}
           title="Select"
@@ -106,14 +116,14 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
               <div className="flex items-center space-x-2 mb-1">
                 <span
                   className={`text-sm ${
-                    !email.seen
+                    !email.read
                       ? "font-semibold text-gray-900"
                       : "font-medium text-gray-700"
                   }`}
                 >
                   {email.sender}
                 </span>
-                {!email.seen && (
+                {email.isNew && (
                   <span className="bg-green-100 text-green-800 text-xs font-medium px-1.5 py-0.5 rounded-full">
                     NEW
                   </span>
@@ -122,7 +132,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
               <div className="flex items-center justify-between">
                 <h3
                   className={`text-sm ${
-                    !email.seen
+                    !email.read
                       ? "font-semibold text-gray-900"
                       : "font-medium text-gray-800"
                   } truncate flex-1`}
@@ -179,19 +189,19 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
             <div className="flex items-center space-x-3">
               <span
                 className={`text-gray-900 ${
-                  !email.seen ? "font-semibold" : "font-medium"
+                  !email.read ? "font-semibold" : "font-medium"
                 }`}
               >
                 {email.sender}
               </span>
-              {!email.seen && (
+              {email.isNew && (
                 <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
                   NEW
                 </span>
               )}
             </div>
 
-            {/* Hover actions / timestamp */}
+            {/* Show action buttons on hover, otherwise show date */}
             <div className="flex items-center space-x-1">
               {isHovered ? (
                 <div className="flex items-center space-x-1">
@@ -228,43 +238,30 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
           <div className="flex items-center space-x-2 mb-2">
             <h3
               className={`text-sm ${
-                !email.seen ? "font-semibold text-gray-900" : "text-gray-800"
+                !email.read ? "font-semibold text-gray-900" : "text-gray-800"
               }`}
             >
               {email.subject}
             </h3>
-            <span className="text-sm text-gray-500">—</span>
+            <span className="text-sm text-gray-500">–</span>
             <p className="text-sm text-gray-600 truncate flex-1">
               {email.preview}
             </p>
           </div>
         </div>
 
-        {/* Attachments */}
-        {email.rawAttachments?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {email.rawAttachments.map((attachment, index) => (
-              <div
+        {/* Attachments - shown on both mobile and desktop */}
+        {email.attachments && email.attachments.length > 0 && (
+          <div className="flex items-center space-x-2 mt-2">
+            {email.attachments.map((attachment, index) => (
+              <span
                 key={index}
-                className="inline-flex items-center space-x-2 bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-md border border-blue-200 hover:bg-blue-100 transition-colors"
+                className="inline-flex items-center space-x-1 bg-red-50 text-red-700 text-xs px-2 py-1 rounded-md border border-red-200"
               >
-                <FileText className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate max-w-[120px] sm:max-w-none">
-                  {attachment.filename}
-                </span>
-                {attachment.size && (
-                  <span className="text-blue-500 hidden sm:inline">
-                    ({Math.round(attachment.size / 1024)}KB)
-                  </span>
-                )}
-                <a
-                  href={attachment.download_url}
-                  className="p-1 hover:bg-blue-200 rounded transition-colors"
-                  title="Download"
-                >
-                  <Download className="w-3 h-3" />
-                </a>
-              </div>
+                <FileText className="w-3 h-3" />
+                <span className="hidden sm:inline">{attachment}</span>
+                <span className="sm:hidden">📎</span>
+              </span>
             ))}
           </div>
         )}

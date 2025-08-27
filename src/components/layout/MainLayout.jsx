@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import {
   Menu,
   Search,
@@ -85,6 +85,45 @@ const MainLayout = ({ children }) => {
     navigate("/profile");
   }; // end of handleProfileSettings
 
+  //handle logout
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        console.warn("Tidak ada token, langsung redirect");
+        localStorage.removeItem("user");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch("http://127.0.0.1:8000/api/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      console.log("Logout response:", data);
+
+      // Hapus token & user dari localStorage
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+
+      // Redirect ke login
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // tetap hapus local data biar user dipaksa login lagi
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="h-screen flex bg-slate-900 relative">
       {/* Mobile Overlay */}
@@ -98,7 +137,7 @@ const MainLayout = ({ children }) => {
 
       {/* Sidebar */}
       <div
-        className={`bg-slate-900 border-r border-slate-700 flex flex-col transition-all duration-300 z-50 ${
+        className={`bg-gradient-to-br from-slate-800 via-slate-900 to-slate-900 border-r border-slate-700 flex flex-col transition-all duration-300 z-50 ${
           isMobile
             ? `fixed left-0 top-0 h-full ${
                 mobileMenuOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
@@ -179,7 +218,10 @@ const MainLayout = ({ children }) => {
           }`}
         >
           {!sidebarCollapsed || isMobile ? (
-            <button className="w-full flex items-center gap-3 px-3 py-2 mt-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+            <button
+              className="w-full flex items-center gap-3 px-3 py-2 mt-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              onClick={handleLogout}
+            >
               <LogOut size={16} />
               <span className="text-sm md:text-base">Logout</span>
             </button>
@@ -187,6 +229,7 @@ const MainLayout = ({ children }) => {
             <button
               className="w-full p-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors flex items-center justify-center"
               title="Logout"
+              onClick={handleLogout}
             >
               <LogOut size={16} />
             </button>
@@ -249,13 +292,16 @@ const MainLayout = ({ children }) => {
                   <p className="text-sm text-gray-500">john.doe@flowsent.com</p>
                 </div>
                 <button
-                  className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700"
+                  className="w-full text-left px-4 py-2 hover:bg-slate-200 flex items-center space-x-2 text-gray-700"
                   onClick={handleProfileSettings}
                 >
                   <Settings className="w-4 h-4" />
                   <span>Settings</span>
                 </button>
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center space-x-2 text-gray-700">
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-slate-200 flex items-center space-x-2 text-gray-700"
+                  onClick={handleLogout}
+                >
                   <LogOut className="w-4 h-4" />
                   <span>Logout</span>
                 </button>
@@ -267,7 +313,9 @@ const MainLayout = ({ children }) => {
         {/* end of Topbar/Nav */}
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto bg-white">{children}</div>
+        <div className="flex-1 overflow-auto bg-white">
+          <Outlet />
+        </div>
         {/* end of Main Content */}
       </div>
       {/* end of Main Content Area */}

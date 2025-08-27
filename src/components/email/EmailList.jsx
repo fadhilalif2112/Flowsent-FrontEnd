@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import EmailItem from "./EmailItem";
-import { Archive, Trash2, Mail, Plus } from "lucide-react";
+import { Archive, Trash2, Mail, Plus, RefreshCcw } from "lucide-react";
 
 const EmailList = ({
   emails,
@@ -9,9 +9,8 @@ const EmailList = ({
   selectedCount,
   selectAll,
   onSelectAll,
+  refreshEmails,
 }) => {
-  const [showMoreActions, setShowMoreActions] = useState(false);
-
   return (
     <div className="flex-1 overflow-auto bg-white">
       {/* === Toolbar (Mobile + Desktop) === */}
@@ -31,13 +30,29 @@ const EmailList = ({
                   {selectedCount} selected
                 </span>
               )}
-              <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400"
+                onClick={refreshEmails}
+                title="Refresh"
+              >
+                <RefreshCcw className="w-4 h-4" />
+              </button>
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
+                title="Archive"
+              >
                 <Archive className="w-4 h-4" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                title="Move to Trash"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+                title="Mark as Read"
+              >
                 <Mail className="w-4 h-4" />
               </button>
             </div>
@@ -62,13 +77,29 @@ const EmailList = ({
                 {selectedCount} selected
               </span>
             )}
-            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400"
+              onClick={refreshEmails}
+              title="Refresh"
+            >
+              <RefreshCcw className="w-5 h-5" />
+            </button>
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
+              title="Archive"
+            >
               <Archive className="w-5 h-5" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+              title="Move to Trash"
+            >
               <Trash2 className="w-5 h-5" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+              title="Mark as Read"
+            >
               <Mail className="w-5 h-5" />
             </button>
           </div>
@@ -84,9 +115,9 @@ const EmailList = ({
       <div>
         {emails.map((email) => (
           <EmailItem
-            key={email.id}
+            key={email.uid}
             email={email}
-            isSelected={selectedEmails.includes(email.id)}
+            isSelected={selectedEmails.includes(email.uid)}
             onToggleSelect={onToggleSelect}
             showAvatar={true}
           />
