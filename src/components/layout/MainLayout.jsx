@@ -23,9 +23,9 @@ const sidebarItems = [
   { icon: Edit, label: "Compose", key: "compose", path: "/compose" }, // path dummy
   { icon: Star, label: "Starred", key: "starred", path: "/starred" },
   { icon: Send, label: "Sent", key: "sent", path: "/sent" },
-  { icon: FileText, label: "Drafts", key: "drafts", path: "/drafts", count: 2 },
+  { icon: FileText, label: "Draft", key: "draft", path: "/draft", count: 2 },
   { icon: Archive, label: "Archive", key: "archive", path: "/archive" },
-  { icon: Trash2, label: "Trash", key: "trash", path: "/trash" },
+  { icon: Trash2, label: "Junk", key: "junk", path: "/junk" },
 ]; // end of sidebarItems
 
 const MainLayout = ({ children }) => {

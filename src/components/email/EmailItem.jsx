@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom"; // Import yang hilang
 import {
   Star,
   Archive,
@@ -13,6 +14,10 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
   const [isStarred, setIsStarred] = useState(email.flagged); // flagged dari backend
   const [isHovered, setIsHovered] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
+
+  // Hooks yang diperlukan untuk navigasi
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleStarToggle = (e) => {
     e.stopPropagation();
@@ -55,14 +60,28 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
     }
   };
 
+  const getCurrentFolder = () => {
+    const path = location.pathname;
+    if (path === "/") return "inbox";
+    return path.substring(1); // Remove leading slash
+  };
+
+  const handleEmailClick = () => {
+    const currentFolder = getCurrentFolder();
+    navigate(`/${currentFolder}/${email.uid}`, {
+      state: { from: currentFolder },
+    });
+  };
+
   return (
     <div
       className={`
         px-3 md:px-6 py-3 md:py-4 hover:bg-gray-50 cursor-pointer transition-colors flex items-start md:items-center space-x-2 md:space-x-4 group border-b border-gray-100
-        ${!email.seen ? "bg-white" : "bg-white"}
+        ${!email.seen ? "bg-slate-200 font-bold" : "bg-white"}
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleEmailClick} // Event handler sudah benar
     >
       {/* Checkbox - Hidden on mobile */}
       <input
@@ -95,6 +114,11 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
           onClick={(e) => e.stopPropagation()}
           title="Select"
         />
+      </div>
+      <div className="w-8 h-8 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+        <span className="text-white text-sm font-medium">
+          {email.sender.charAt(0).toUpperCase()}
+        </span>
       </div>
 
       {/* Main content */}
@@ -247,6 +271,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
               <div
                 key={index}
                 className="inline-flex items-center space-x-2 bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-md border border-blue-200 hover:bg-blue-100 transition-colors"
+                onClick={(e) => e.stopPropagation()} // Prevent email click when clicking attachment
               >
                 <FileText className="w-3 h-3 flex-shrink-0" />
                 <span className="truncate max-w-[120px] sm:max-w-none">
@@ -261,6 +286,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
                   href={attachment.download_url}
                   className="p-1 hover:bg-blue-200 rounded transition-colors"
                   title="Download"
+                  onClick={(e) => e.stopPropagation()} // Prevent email click when downloading
                 >
                   <Download className="w-3 h-3" />
                 </a>

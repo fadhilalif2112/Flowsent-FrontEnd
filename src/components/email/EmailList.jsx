@@ -113,15 +113,23 @@ const EmailList = ({
 
       {/* === Email List === */}
       <div>
-        {emails.map((email) => (
-          <EmailItem
-            key={email.uid}
-            email={email}
-            isSelected={selectedEmails.includes(email.uid)}
-            onToggleSelect={onToggleSelect}
-            showAvatar={true}
-          />
-        ))}
+        {emails.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+            <Mail className="w-12 h-12 mb-3 text-gray-400" />
+            <p className="text-lg font-medium">Tidak ada email</p>
+            <p className="text-sm">Kotak masuk kamu kosong</p>
+          </div>
+        ) : (
+          emails.map((email) => (
+            <EmailItem
+              key={email.uid}
+              email={email}
+              isSelected={selectedEmails.includes(email.uid)}
+              onToggleSelect={onToggleSelect}
+              showAvatar={true}
+            />
+          ))
+        )}
       </div>
 
       {/* Footer pagination */}
