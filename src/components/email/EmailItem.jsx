@@ -77,7 +77,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
     <div
       className={`
         px-3 md:px-6 py-3 md:py-4 hover:bg-gray-50 cursor-pointer transition-colors flex items-start md:items-center space-x-2 md:space-x-4 group border-b border-gray-100
-        ${!email.seen ? "bg-slate-200 font-bold" : "bg-white"}
+        ${!email.seen ? "bg-slate-100 font-bold" : "bg-white"}
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

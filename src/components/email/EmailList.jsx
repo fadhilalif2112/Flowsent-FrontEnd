@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import EmailItem from "./EmailItem";
 import { Archive, Trash2, Mail, Plus, RefreshCcw } from "lucide-react";
+import ComposeModal from "../compose/ComposeModal";
 
 const EmailList = ({
   emails,
@@ -11,6 +12,14 @@ const EmailList = ({
   onSelectAll,
   refreshEmails,
 }) => {
+  // State untuk modal compose
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+
+  // Handler untuk membuka modal compose
+  const handleComposeClick = () => {
+    setIsComposeOpen(true);
+  };
+
   return (
     <div className="flex-1 overflow-auto bg-white">
       {/* === Toolbar (Mobile + Desktop) === */}
@@ -56,7 +65,10 @@ const EmailList = ({
                 <Mail className="w-4 h-4" />
               </button>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium flex items-center space-x-1 text-sm">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium flex items-center space-x-1 text-sm"
+              onClick={handleComposeClick}
+            >
               <Plus className="w-4 h-4" />
               <span className="hidden xs:inline">Compose</span>
             </button>
@@ -104,7 +116,10 @@ const EmailList = ({
             </button>
           </div>
 
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2">
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2"
+            onClick={handleComposeClick}
+          >
             <Plus className="w-4 h-4" />
             <span>Compose</span>
           </button>
@@ -211,6 +226,11 @@ const EmailList = ({
           </div>
         </div>
       </div>
+      {/* Compose Modal */}
+      <ComposeModal
+        isOpen={isComposeOpen}
+        onClose={() => setIsComposeOpen(false)}
+      />
     </div>
   );
 };

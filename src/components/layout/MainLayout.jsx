@@ -16,11 +16,12 @@ import {
   Mails,
   Mailbox,
 } from "lucide-react";
+import ComposeModal from "../compose/ComposeModal";
 
 // Sidebar items for navigation
 const sidebarItems = [
   { icon: Mails, label: "Inbox", key: "inbox", path: "/inbox" },
-  { icon: Edit, label: "Compose", key: "compose", path: "/compose" }, // path dummy
+  { icon: Edit, label: "Compose", key: "compose", path: "/compose" },
   { icon: Star, label: "Starred", key: "starred", path: "/starred" },
   { icon: Send, label: "Sent", key: "sent", path: "/sent" },
   { icon: FileText, label: "Draft", key: "draft", path: "/draft", count: 2 },
@@ -33,6 +34,7 @@ const MainLayout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,6 +65,12 @@ const MainLayout = ({ children }) => {
 
   // Handle tab click for navigation
   const handleTabClick = (item) => {
+    // Khusus untuk Compose
+    if (item.key === "compose") {
+      setIsComposeOpen(true);
+      return;
+    }
+
     navigate(item.path);
     if (isMobile) {
       setMobileMenuOpen(false);
@@ -318,6 +326,11 @@ const MainLayout = ({ children }) => {
         </div>
         {/* end of Main Content */}
       </div>
+      {/* Compose Modal */}
+      <ComposeModal
+        isOpen={isComposeOpen}
+        onClose={() => setIsComposeOpen(false)}
+      />
       {/* end of Main Content Area */}
     </div>
   );

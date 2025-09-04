@@ -13,7 +13,6 @@ import LoginPage from "./pages/LoginPage";
 import GuestRoute from "./components/auth/GuestRoute";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { EmailProvider } from "./context/EmailContext";
-import ComposePage from "./pages/ComposePage";
 import EmailDetailPage from "./pages/EmailDetailPage";
 
 function App() {
@@ -47,7 +46,6 @@ function App() {
           <Route path="/sent" element={<SentPage />} />
           <Route path="/starred" element={<StarredPage />} />
           <Route path="/junk" element={<TrashPage />} />
-          <Route path="/compose" element={<ComposePage />} />
 
           {/* Email detail routes */}
           <Route path="inbox/:uid" element={<EmailDetailPage />} />
@@ -55,6 +53,7 @@ function App() {
           <Route path="draft/:uid" element={<EmailDetailPage />} />
           <Route path="deleted/:uid" element={<EmailDetailPage />} />
           <Route path="junk/:uid" element={<EmailDetailPage />} />
+          <Route path="archive/:uid" element={<EmailDetailPage />} />
 
           {/* Not Found */}
           <Route path="*" element={<NotFound />} />

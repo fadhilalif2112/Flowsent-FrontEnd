@@ -62,9 +62,10 @@ export const EmailProvider = ({ children }) => {
     }
   };
 
+  // Fetch emails saat pertama kali mount
   useEffect(() => {
     fetchEmails();
-  }, []); // Empty dependency array - hanya fetch sekali saat mount
+  }, []);
 
   // Function untuk refresh emails (bisa dipanggil dari komponen lain)
   const refreshEmails = async () => {
