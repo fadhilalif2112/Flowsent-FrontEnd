@@ -13,10 +13,13 @@ import {
   Archive,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useEmails } from "../../context/EmailContext";
 
 const EmailDetail = ({ email, loading = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { downloadAttachment } = useEmails();
 
   // Get the previous folder from state or default to inbox
   const previousFolder = location.state?.from || "inbox";
@@ -267,14 +270,16 @@ const EmailDetail = ({ email, loading = false }) => {
                       {formatFileSize(attachment.size)}
                     </div>
                   </div>
-                  <a
-                    href={attachment.download_url}
-                    download={attachment.filename}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      downloadAttachment(email.uid, attachment.filename);
+                    }}
                     className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-600 transition-colors"
                     title="Download"
                   >
                     <Download className="w-4 h-4" />
-                  </a>
+                  </button>
                 </div>
               ))}
             </div>

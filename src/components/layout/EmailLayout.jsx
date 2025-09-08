@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import EmailList from "../email/EmailList";
 import { useEmails } from "../../context/EmailContext";
 
-const EmailLayout = ({ folderName }) => {
+const EmailLayout = ({ folderName, customEmails }) => {
   const { emails: allEmails, loading, error, refreshEmails } = useEmails(); // ambil dari Context
   const [selectedEmails, setSelectedEmails] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
-  const emails = allEmails[folderName] || [];
+  const emails = customEmails || allEmails[folderName] || [];
 
   const toggleSelectAll = () => {
     if (selectAll) {
@@ -87,6 +87,7 @@ const EmailLayout = ({ folderName }) => {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
               <h3 className="text-red-800 font-semibold mb-2">
                 Unable to load emails
+                {error}
               </h3>
               <p className="text-red-600 text-sm">Please try again later.</p>
               <button

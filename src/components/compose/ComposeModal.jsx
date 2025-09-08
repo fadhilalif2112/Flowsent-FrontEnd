@@ -14,12 +14,6 @@ import Notification from "../ui/Notification";
  * @param {Object} props - Component props
  * @param {boolean} props.isOpen - State untuk menampilkan/menyembunyikan modal
  * @param {Function} props.onClose - Handler untuk menutup modal
- * @param {Object} props.defaultValues - Nilai default untuk form (optional)
- * @param {string} props.defaultValues.to - Email penerima default
- * @param {string} props.defaultValues.subject - Subject default
- * @param {string} props.defaultValues.body - Body email default
- * @param {Function} props.onSend - Custom handler untuk send email (optional)
- * @param {Function} props.onSaveDraft - Custom handler untuk save draft (optional)
  *
  * @example
  * <ComposeModal
@@ -28,17 +22,14 @@ import Notification from "../ui/Notification";
  *   defaultValues={{ to: "example@email.com" }}
  * />
  */
-const ComposeModal = ({
-  isOpen,
-  onClose,
-  // defaultValues = {},
-  onSend,
-  onSaveDraft,
-}) => {
+const ComposeModal = ({ isOpen, onClose }) => {
   // State untuk form fields
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+
+  // State untuk attachment
+  const [attachments, setAttachments] = useState([]);
 
   // State untuk link dialog
   const [linkDialog, setLinkDialog] = useState({
@@ -46,9 +37,6 @@ const ComposeModal = ({
     selection: null,
   });
   const [linkUrl, setLinkUrl] = useState("");
-
-  // State untuk attachment
-  const [attachments, setAttachments] = useState([]);
 
   // State untuk confirm dialog
   const [showConfirm, setShowConfirm] = useState(false);
@@ -186,11 +174,6 @@ const ComposeModal = ({
       newErrors.to = "Recipient email is required";
     } else if (!validateEmails(to)) {
       newErrors.to = "Please enter valid email address(es)";
-    }
-
-    // Subject optional untuk draft, tapi recommended untuk send
-    if (!subject.trim() && !window.confirm("Send without subject?")) {
-      newErrors.subject = "Subject is recommended";
     }
 
     setErrors(newErrors);

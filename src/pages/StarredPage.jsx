@@ -1,9 +1,15 @@
 import React from "react";
 import EmailLayout from "../components/layout/EmailLayout";
-import { inboxEmail } from "../data/sampleEmails";
+import { useEmails } from "../context/EmailContext";
 
 const StarredPage = () => {
-  return <EmailLayout folderName="starred" emails={inboxEmail} />;
+  const { emails: allEmails } = useEmails();
+
+  // gabung semua folder jadi satu array, lalu filter flagged
+  const allFolders = Object.values(allEmails).flat();
+  const starredEmails = allFolders.filter((email) => email.flagged);
+
+  return <EmailLayout customEmails={starredEmails} />;
 };
 
 export default StarredPage;

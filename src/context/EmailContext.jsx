@@ -1,6 +1,7 @@
 // src/context/EmailContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchEmailsApi, downloadAttachmentApi } from "../services/api.js";
 
 const EmailContext = createContext();
 
@@ -13,50 +14,11 @@ export const EmailProvider = ({ children }) => {
   const fetchEmails = async () => {
     try {
       setLoading(true);
-
-      // Ambil authToken dari localStorage
-      const authToken = localStorage.getItem("authToken");
-
-      // Jika tidak ada token, redirect ke login
-      if (!authToken) {
-        setError("Authentication token not found. Please login again.");
-        //make alert
-        alert("Authentication token not found. Please login again.");
-        navigate("/login");
-        return;
-      }
-
-      const res = await fetch("http://127.0.0.1:8000/api/emails/all", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-
-      // Jika response 401 (Unauthorized), token mungkin expired
-      if (res.status === 401) {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-        setError("Session expired. Please login again.");
-        alert("Session expired. Please login again.");
-        navigate("/login");
-        return;
-      }
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to fetch emails");
-      }
-
-      const data = await res.json();
-
+      const data = await fetchEmailsApi();
       setEmails(data);
-      console.log(data);
     } catch (err) {
-      console.error("Fetch emails error:", err);
       setError(err.message);
+      navigate("/login");
     } finally {
       setLoading(false);
     }
@@ -72,6 +34,15 @@ export const EmailProvider = ({ children }) => {
     await fetchEmails();
   };
 
+  //download attachment dari backend
+  const downloadAttachment = async (uid, filename) => {
+    try {
+      await downloadAttachmentApi(uid, filename);
+    } catch (err) {
+      console.error("Error downloading attachment:", err);
+    }
+  };
+
   return (
     <EmailContext.Provider
       value={{
@@ -79,6 +50,7 @@ export const EmailProvider = ({ children }) => {
         loading,
         error,
         refreshEmails,
+        downloadAttachment,
       }}
     >
       {children}

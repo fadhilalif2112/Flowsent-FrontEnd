@@ -9,12 +9,14 @@ import {
   MoreVertical,
   Download,
 } from "lucide-react";
+import { useEmails } from "../../context/EmailContext";
 
 const EmailItem = ({ email, isSelected, onToggleSelect }) => {
   const [isStarred, setIsStarred] = useState(email.flagged); // flagged dari backend
   const [isHovered, setIsHovered] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
 
+  const { downloadAttachment } = useEmails();
   // Hooks yang diperlukan untuk navigasi
   const navigate = useNavigate();
   const location = useLocation();
@@ -282,14 +284,16 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
                     ({Math.round(attachment.size / 1024)}KB)
                   </span>
                 )}
-                <a
-                  href={attachment.download_url}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    downloadAttachment(email.uid, attachment.filename);
+                  }}
                   className="p-1 hover:bg-blue-200 rounded transition-colors"
                   title="Download"
-                  onClick={(e) => e.stopPropagation()} // Prevent email click when downloading
                 >
                   <Download className="w-3 h-3" />
-                </a>
+                </button>
               </div>
             ))}
           </div>

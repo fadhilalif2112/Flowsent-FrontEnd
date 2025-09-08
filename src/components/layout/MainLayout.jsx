@@ -17,6 +17,7 @@ import {
   Mailbox,
 } from "lucide-react";
 import ComposeModal from "../compose/ComposeModal";
+import { logout } from "../../services/api";
 
 // Sidebar items for navigation
 const sidebarItems = [
@@ -96,38 +97,10 @@ const MainLayout = ({ children }) => {
   //handle logout
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        console.warn("Tidak ada token, langsung redirect");
-        localStorage.removeItem("user");
-        navigate("/login");
-        return;
-      }
-
-      const response = await fetch("http://127.0.0.1:8000/api/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      console.log("Logout response:", data);
-
-      // Hapus token & user dari localStorage
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
-
-      // Redirect ke login
+      await logout();
       navigate("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-      // tetap hapus local data biar user dipaksa login lagi
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
+    } catch (err) {
+      alert(err.message);
       navigate("/login");
     }
   };

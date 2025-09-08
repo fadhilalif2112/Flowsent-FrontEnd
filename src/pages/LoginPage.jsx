@@ -12,6 +12,7 @@ import {
   Check,
   Mailbox,
 } from "lucide-react";
+import { login } from "../services/api.js";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -46,30 +47,10 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrorMessage(data.message || "Login gagal, coba lagi.");
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user.email));
-
+      const data = await login(email, password);
       navigate("/inbox");
     } catch (error) {
-      console.error("Login error:", error);
-      setErrorMessage("Terjadi kesalahan pada server.");
+      setErrorMessage(error.message);
     } finally {
       setLoading(false);
     }
