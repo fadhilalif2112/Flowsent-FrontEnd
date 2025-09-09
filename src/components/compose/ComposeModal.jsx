@@ -4,6 +4,7 @@ import "react-quill-new/dist/quill.snow.css";
 import { X, Send, Save, Paperclip } from "lucide-react";
 import ConfirmDialog from "../ui/ConfirmDialog";
 import Notification from "../ui/Notification";
+import { sendEmailApi } from "../../services/api";
 
 /**
  * ComposeModal Component
@@ -27,6 +28,8 @@ const ComposeModal = ({ isOpen, onClose }) => {
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
+  const [drafting, setDrafting] = useState(false);
 
   // State untuk attachment
   const [attachments, setAttachments] = useState([]);
@@ -192,35 +195,27 @@ const ComposeModal = ({ isOpen, onClose }) => {
       );
       return;
     }
-
-    const emailData = {
-      to: to.trim(),
-      subject: subject.trim(),
-      body: body,
-      timestamp: new Date().toISOString(),
-      attachments,
-    };
-
+    setSending(true);
     try {
-      if (onSend) {
-        await onSend(emailData);
-        showNotification("success", "Email sent successfully!");
-      } else {
-        console.log("Send Email:", emailData);
-        showNotification(
-          "success",
-          "Email sent successfully! (Check console for details)"
-        );
-      }
+      const result = await sendEmailApi({
+        to: to.trim(),
+        subject: subject.trim(),
+        body,
+        attachments,
+      });
 
-      // Reset form dan tutup modal setelah delay untuk melihat notification
+      showNotification("success", "Email sent successfully!");
+      console.log("Server response:", result);
+
       setTimeout(() => {
         resetForm();
         onClose();
       }, 1000);
     } catch (error) {
       console.error("Error sending email:", error);
-      showNotification("error", "Failed to send email. Please try again.");
+      showNotification("error", error.message || "Failed to send email.");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -237,17 +232,13 @@ const ComposeModal = ({ isOpen, onClose }) => {
       isDraft: true,
     };
 
+    setDrafting(true);
     try {
-      if (onSaveDraft) {
-        await onSaveDraft(draftData);
-        showNotification("success", "Draft saved successfully!");
-      } else {
-        console.log("Save Draft:", draftData);
-        showNotification(
-          "success",
-          "Draft saved successfully! (Check console for details)"
-        );
-      }
+      console.log("Save Draft:", draftData);
+      showNotification(
+        "success",
+        "Draft saved successfully! (Check console for details)"
+      );
 
       // Reset form dan tutup modal setelah delay untuk melihat notification
       setTimeout(() => {
@@ -257,6 +248,8 @@ const ComposeModal = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error("Error saving draft:", error);
       showNotification("error", "Failed to save draft. Please try again.");
+    } finally {
+      setDrafting(false);
     }
   };
 
@@ -466,19 +459,85 @@ const ComposeModal = ({ isOpen, onClose }) => {
                 {/* Save Draft Button */}
                 <button
                   onClick={handleSaveDraft}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-2"
+                  disabled={drafting}
+                  className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                    drafting
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  }`}
                 >
-                  <Save className="w-4 h-4" />
-                  Save as Draft
+                  {drafting ? (
+                    <span className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin h-4 w-4 text-gray-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                      Loading...
+                    </span>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save as Draft
+                    </>
+                  )}
                 </button>
 
                 {/* Send Button */}
                 <button
                   onClick={handleSendEmail}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                  disabled={sending}
+                  className={`px-6 py-2 text-white rounded-lg transition-colors flex items-center gap-2 ${
+                    sending
+                      ? "bg-blue-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
-                  <Send className="w-4 h-4" />
-                  Send
+                  {sending ? (
+                    <span className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                      Sending...
+                    </span>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Send
+                    </>
+                  )}
                 </button>
               </div>
             </div>

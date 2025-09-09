@@ -7,6 +7,7 @@ import DraftsPage from "./pages/DraftsPage";
 import SentPage from "./pages/SentPage";
 import StarredPage from "./pages/StarredPage";
 import TrashPage from "./pages/TrashPage";
+import SpamPage from "./pages/SpamPage";
 import "./App.css";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
@@ -14,6 +15,7 @@ import GuestRoute from "./components/auth/GuestRoute";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { EmailProvider } from "./context/EmailContext";
 import EmailDetailPage from "./pages/EmailDetailPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -44,8 +46,10 @@ function App() {
           <Route path="/archive" element={<ArchivePage />} />
           <Route path="/draft" element={<DraftsPage />} />
           <Route path="/sent" element={<SentPage />} />
+          <Route path="/junk" element={<SpamPage />} />
+          <Route path="/deleted" element={<TrashPage />} />
           <Route path="/starred" element={<StarredPage />} />
-          <Route path="/junk" element={<TrashPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
 
           {/* Email detail routes */}
           <Route path="inbox/:uid" element={<EmailDetailPage />} />
@@ -54,6 +58,7 @@ function App() {
           <Route path="deleted/:uid" element={<EmailDetailPage />} />
           <Route path="junk/:uid" element={<EmailDetailPage />} />
           <Route path="archive/:uid" element={<EmailDetailPage />} />
+          <Route path="starred/:uid" element={<EmailDetailPage />} />
 
           {/* Not Found */}
           <Route path="*" element={<NotFound />} />

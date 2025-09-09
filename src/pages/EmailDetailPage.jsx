@@ -32,19 +32,21 @@ const EmailDetailPage = () => {
         return;
       }
 
-      // Cari email berdasarkan folder dan uid
-      const folderData = emails[folder];
+      // Cari email berdasarkan folder & uid
+      let foundEmail = null;
 
-      if (folderData && Array.isArray(folderData)) {
-        const foundEmail = folderData.find(
-          (email) => email.uid === parseInt(uid)
-        );
-        setEmail(foundEmail || null);
+      if (folder === "starred") {
+        // gabung semua folder jadi satu array
+        const allFolders = Object.values(emails).flat();
+        foundEmail = allFolders.find((email) => email.uid === parseInt(uid));
       } else {
-        console.log(`Folder '${folder}' not found or not an array`);
-        setEmail(null);
+        const folderData = emails[folder];
+        if (folderData && Array.isArray(folderData)) {
+          foundEmail = folderData.find((email) => email.uid === parseInt(uid));
+        }
       }
 
+      setEmail(foundEmail || null);
       setLoading(false);
     };
 

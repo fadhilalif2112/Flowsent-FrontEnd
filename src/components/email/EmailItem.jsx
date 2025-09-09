@@ -16,14 +16,38 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
 
-  const { downloadAttachment } = useEmails();
+  const { downloadAttachment, markAsFlagged, markAsUnflagged, markAsRead } =
+    useEmails();
+
   // Hooks yang diperlukan untuk navigasi
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleStarToggle = (e) => {
+  const handleStarToggle = async (e) => {
     e.stopPropagation();
+    const currentFolder = getCurrentFolder();
+
+    // simpan state sebelumnya
+    const prevStarred = isStarred;
+
+    // langsung toggle UI
     setIsStarred(!isStarred);
+
+    try {
+      if (prevStarred) {
+        // sebelumnya starred → unflag
+        await markAsUnflagged(currentFolder, email.uid);
+        console.log("Unflagged berhasil");
+      } else {
+        // sebelumnya unstarred → flag
+        await markAsFlagged(currentFolder, email.uid);
+        console.log("Flagged berhasil");
+      }
+    } catch (err) {
+      console.error("Failed to toggle star:", err);
+      // rollback kalau gagal
+      setIsStarred(prevStarred);
+    }
   };
 
   const toggleMobileActions = (e) => {
@@ -31,10 +55,31 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
     setShowMobileActions(!showMobileActions);
   };
 
-  const formatTime = (timestamp) => {
+  const handleMarkAsRead = async (e) => {
+    e.stopPropagation();
+    const currentFolder = getCurrentFolder();
+
+    if (!email.seen) {
+      email.seen = true;
+    }
+
     try {
-      // Format: "22 August 2025, 14:39 GMT+0700"
-      const emailDate = new Date(timestamp.replace(" GMT+0700", " +0700"));
+      await markAsRead(currentFolder, email.uid);
+      console.log("Email berhasil ditandai sebagai read");
+    } catch (err) {
+      console.error("Failed to mark as read:", err);
+      // rollback jika gagal
+      email.seen = false;
+    }
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return "Unknown"; // null atau kosong
+
+    try {
+      const emailDate = new Date(timestamp);
+      if (isNaN(emailDate.getTime())) return "Unknown"; // cek invalid date
+
       const now = new Date();
       const diffInHours = (now - emailDate) / (1000 * 60 * 60);
 
@@ -42,6 +87,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
       if (diffInHours < 24) return `${Math.floor(diffInHours)}h`;
       const diffInDays = Math.floor(diffInHours / 24);
       if (diffInDays < 7) return `${diffInDays}d`;
+
       const months = [
         "Jan",
         "Feb",
@@ -58,7 +104,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
       ];
       return `${months[emailDate.getMonth()]} ${emailDate.getDate()}`;
     } catch {
-      return timestamp.split(",")[0] || "Unknown";
+      return "Unknown";
     }
   };
 
@@ -191,7 +237,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
                 title="Mark as read"
-                onClick={(e) => e.stopPropagation()}
+                onClick={handleMarkAsRead}
               >
                 <Mail className="w-4 h-4" />
               </button>
@@ -238,7 +284,7 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
                   <button
                     className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
                     title="Mark as read"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={handleMarkAsRead}
                   >
                     <Mail className="w-4 h-4" />
                   </button>

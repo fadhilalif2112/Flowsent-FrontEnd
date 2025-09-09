@@ -121,3 +121,106 @@ export const downloadAttachmentApi = async (uid, filename) => {
   link.click();
   link.remove();
 };
+
+// SEND EMAIL
+export const sendEmailApi = async ({ to, subject, body, attachments }) => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  const formData = new FormData();
+  formData.append("to", to);
+  formData.append("subject", subject);
+  formData.append("body", body);
+
+  if (attachments && attachments.length > 0) {
+    attachments.forEach((file) => {
+      formData.append("attachments[]", file);
+    });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/emails/send`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to send email");
+  }
+
+  return data;
+};
+
+// MARK AS READ
+export const markAsReadApi = async (folder, emailId) => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/emails/mark-as-read`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      folder: folder,
+      email_id: emailId,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to mark email as read");
+  }
+
+  return data;
+};
+
+// MARK AS FLAGGED
+export const markAsFlaggedApi = async (folder, emailId) => {
+  const response = await fetch(`${API_BASE_URL}/emails/flag`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      folder: folder,
+      email_id: emailId,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to flag email");
+  }
+
+  return data;
+};
+
+// MARK AS UNFLAGGED
+export const markAsUnflaggedApi = async (folder, emailId) => {
+  const response = await fetch(`${API_BASE_URL}/emails/unflag`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      folder: folder,
+      email_id: emailId,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to unflag email");
+  }
+
+  return data;
+};

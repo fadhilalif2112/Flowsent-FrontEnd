@@ -210,7 +210,7 @@ const EmailDetail = ({ email, loading = false }) => {
 
             {/* Date on the right */}
             <span className="text-sm text-gray-700">
-              {email.timestamp.split(",")[0]}
+              {email.timestamp ? email.timestamp.split(",")[0] : "Unknown"}
             </span>
           </div>
 

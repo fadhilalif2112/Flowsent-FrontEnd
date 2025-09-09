@@ -15,6 +15,7 @@ import {
   LogOut,
   Mails,
   Mailbox,
+  CircleAlert,
 } from "lucide-react";
 import ComposeModal from "../compose/ComposeModal";
 import { logout } from "../../services/api";
@@ -27,7 +28,8 @@ const sidebarItems = [
   { icon: Send, label: "Sent", key: "sent", path: "/sent" },
   { icon: FileText, label: "Draft", key: "draft", path: "/draft", count: 2 },
   { icon: Archive, label: "Archive", key: "archive", path: "/archive" },
-  { icon: Trash2, label: "Junk", key: "junk", path: "/junk" },
+  { icon: CircleAlert, label: "Junk", key: "junk", path: "/junk" },
+  { icon: Trash2, label: "Trash", key: "deleted", path: "/deleted" },
 ]; // end of sidebarItems
 
 const MainLayout = ({ children }) => {
