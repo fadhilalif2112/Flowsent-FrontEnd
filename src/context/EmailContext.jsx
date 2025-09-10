@@ -7,6 +7,7 @@ import {
   markAsReadApi,
   markAsFlaggedApi,
   markAsUnflaggedApi,
+  moveEmailApi,
 } from "../services/api.js";
 
 const EmailContext = createContext();
@@ -22,10 +23,11 @@ export const EmailProvider = ({ children }) => {
       setLoading(true);
       const data = await fetchEmailsApi();
       setEmails(data);
+      console.log(data);
     } catch (err) {
       setError(err.message);
       // optional: arahkan ke login jika token invalid/expired
-      // navigate("/login");
+      navigate("/login");
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export const EmailProvider = ({ children }) => {
 
   // === Handlers ===
 
-  // Mark as read (optimistic)
+  // Mark as read
   const markAsRead = async (folder, emailId) => {
     const prev = {}; // simpan prev untuk rollback
     try {
@@ -86,7 +88,7 @@ export const EmailProvider = ({ children }) => {
     }
   };
 
-  // Flag (optimistic)
+  // Flag
   const markAsFlagged = async (folder, emailId) => {
     const prev = {};
     try {
@@ -108,7 +110,7 @@ export const EmailProvider = ({ children }) => {
     }
   };
 
-  // Unflag (optimistic)
+  // Unflag
   const markAsUnflagged = async (folder, emailId) => {
     const prev = {};
     try {
@@ -130,6 +132,48 @@ export const EmailProvider = ({ children }) => {
     }
   };
 
+  //move email
+  const moveEmail = async (folder, emailIds, targetFolder) => {
+    try {
+      // pastikan selalu array
+      const ids = Array.isArray(emailIds) ? emailIds : [emailIds];
+
+      // Optimistic UI: update state langsung
+      setEmails((prev) => {
+        const updated = { ...prev };
+
+        // Ambil semua email yang akan dipindah
+        const movedEmails =
+          prev[folder]?.filter((email) => ids.includes(email.uid)) || [];
+
+        // Hapus dari folder asal
+        if (updated[folder]) {
+          updated[folder] = updated[folder].filter(
+            (email) => !ids.includes(email.uid)
+          );
+        }
+
+        // Tambahkan ke folder tujuan
+        if (movedEmails.length > 0) {
+          if (!updated[targetFolder]) {
+            updated[targetFolder] = [];
+          }
+          updated[targetFolder] = [...movedEmails, ...updated[targetFolder]];
+        }
+
+        return updated;
+      });
+
+      // Panggil API backend
+      await moveEmailApi(folder, ids, targetFolder);
+    } catch (err) {
+      console.error("Error moving email:", err);
+      // Rollback jika gagal
+      await refreshEmails();
+      throw err;
+    }
+  };
+
   return (
     <EmailContext.Provider
       value={{
@@ -141,6 +185,7 @@ export const EmailProvider = ({ children }) => {
         markAsRead,
         markAsFlagged,
         markAsUnflagged,
+        moveEmail,
       }}
     >
       {children}

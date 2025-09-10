@@ -224,3 +224,30 @@ export const markAsUnflaggedApi = async (folder, emailId) => {
 
   return data;
 };
+
+// MOVE EMAIL
+export const moveEmailApi = async (folder, emailIds, targetFolder) => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/emails/move`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      folder: folder,
+      email_ids: emailIds,
+      target_folder: targetFolder,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to move email(s)");
+  }
+
+  return data;
+};

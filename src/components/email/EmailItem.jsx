@@ -8,24 +8,34 @@ import {
   FileText,
   MoreVertical,
   Download,
+  CircleAlert,
 } from "lucide-react";
 import { useEmails } from "../../context/EmailContext";
 
-const EmailItem = ({ email, isSelected, onToggleSelect }) => {
+const EmailItem = ({ email, isSelected, onToggleSelect, folderName }) => {
   const [isStarred, setIsStarred] = useState(email.flagged); // flagged dari backend
   const [isHovered, setIsHovered] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
 
-  const { downloadAttachment, markAsFlagged, markAsUnflagged, markAsRead } =
-    useEmails();
+  const {
+    downloadAttachment,
+    markAsFlagged,
+    markAsUnflagged,
+    markAsRead,
+    moveEmail,
+  } = useEmails();
 
   // Hooks yang diperlukan untuk navigasi
   const navigate = useNavigate();
   const location = useLocation();
 
+  const toggleMobileActions = (e) => {
+    e.stopPropagation();
+    setShowMobileActions(!showMobileActions);
+  };
+
   const handleStarToggle = async (e) => {
     e.stopPropagation();
-    const currentFolder = getCurrentFolder();
 
     // simpan state sebelumnya
     const prevStarred = isStarred;
@@ -36,11 +46,11 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
     try {
       if (prevStarred) {
         // sebelumnya starred → unflag
-        await markAsUnflagged(currentFolder, email.uid);
+        await markAsUnflagged(folderName, email.uid);
         console.log("Unflagged berhasil");
       } else {
         // sebelumnya unstarred → flag
-        await markAsFlagged(currentFolder, email.uid);
+        await markAsFlagged(folderName, email.uid);
         console.log("Flagged berhasil");
       }
     } catch (err) {
@@ -50,26 +60,31 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
     }
   };
 
-  const toggleMobileActions = (e) => {
-    e.stopPropagation();
-    setShowMobileActions(!showMobileActions);
-  };
-
   const handleMarkAsRead = async (e) => {
     e.stopPropagation();
-    const currentFolder = getCurrentFolder();
 
     if (!email.seen) {
       email.seen = true;
     }
 
     try {
-      await markAsRead(currentFolder, email.uid);
+      await markAsRead(folderName, email.uid);
       console.log("Email berhasil ditandai sebagai read");
     } catch (err) {
       console.error("Failed to mark as read:", err);
       // rollback jika gagal
       email.seen = false;
+    }
+  };
+
+  const handleMove = async (e, targetFolder) => {
+    e.stopPropagation();
+
+    try {
+      await moveEmail(folderName, [email.uid], targetFolder);
+      console.log(`Email berhasil dipindahkan ke ${targetFolder}`);
+    } catch (err) {
+      console.error(`Gagal memindahkan email ke ${targetFolder}:`, err);
     }
   };
 
@@ -223,14 +238,21 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
                 title="Archive"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => handleMove(e, "archive")}
               >
                 <Archive className="w-4 h-4" />
               </button>
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                title="Spam"
+                onClick={(e) => handleMove(e, "junk")}
+              >
+                <CircleAlert className="w-4 h-4" />
+              </button>
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
                 title="Delete"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => handleMove(e, "deleted")}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -270,14 +292,21 @@ const EmailItem = ({ email, isSelected, onToggleSelect }) => {
                   <button
                     className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
                     title="Archive"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => handleMove(e, "archive")}
                   >
                     <Archive className="w-4 h-4" />
                   </button>
                   <button
                     className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                    title="Spam"
+                    onClick={(e) => handleMove(e, "junk")}
+                  >
+                    <CircleAlert className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
                     title="Delete"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => handleMove(e, "deleted")}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

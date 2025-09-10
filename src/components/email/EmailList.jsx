@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import EmailItem from "./EmailItem";
-import { Archive, Trash2, Mail, Plus, RefreshCcw } from "lucide-react";
+import {
+  Archive,
+  Trash2,
+  Mail,
+  Plus,
+  RefreshCcw,
+  CircleAlert,
+} from "lucide-react";
 import ComposeModal from "../compose/ComposeModal";
 import { useEmails } from "../../context/EmailContext";
 
 const EmailList = ({ emails, folderName }) => {
-  const { refreshEmails, markAsRead } = useEmails();
+  const { refreshEmails, markAsRead, moveEmail } = useEmails();
 
-  // pindahkan state selection ke sini
   const [selectedEmails, setSelectedEmails] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
@@ -33,30 +39,26 @@ const EmailList = ({ emails, folderName }) => {
     });
   };
 
+  // ✅ Optimistic Mark as Read
   const handleMarkAsRead = async () => {
-    const prevState = [...emails]; // simpan snapshot lama untuk rollback
+    const prevState = [...emails];
 
     try {
-      // Optimistic update: langsung tandai email sebagai read di UI
       emails.forEach((email) => {
         if (selectedEmails.includes(email.uid)) {
           email.seen = true;
         }
       });
 
-      // Kirim request ke backend
       for (const emailId of selectedEmails) {
         await markAsRead(folderName, emailId);
-        console.log("Mark as Read success");
       }
 
-      // Clear selection setelah sukses
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
       console.error("Failed to mark as read:", err);
-
-      // Rollback UI ke state sebelumnya
+      // rollback
       prevState.forEach((prevEmail) => {
         const idx = emails.findIndex((e) => e.uid === prevEmail.uid);
         if (idx !== -1) {
@@ -66,7 +68,20 @@ const EmailList = ({ emails, folderName }) => {
     }
   };
 
-  // Handler untuk membuka modal compose
+  // ✅ Move emails to folder (Archive / Trash)
+  const handleMove = async (targetFolder) => {
+    try {
+      await moveEmail(folderName, selectedEmails, targetFolder);
+      console.log("Move emails success");
+
+      // reset selection
+      setSelectedEmails([]);
+      setSelectAll(false);
+    } catch (err) {
+      console.error(`Failed to move emails to ${targetFolder}:`, err);
+    }
+  };
+
   const handleComposeClick = () => setIsComposeOpen(true);
 
   return (
@@ -96,12 +111,24 @@ const EmailList = ({ emails, folderName }) => {
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
               title="Archive"
+              disabled={selectedEmails.length === 0}
+              onClick={() => handleMove("archive")}
             >
               <Archive className="w-4 h-4 md:w-5 md:h-5" />
             </button>
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+              title="Spam"
+              disabled={selectedEmails.length === 0}
+              onClick={() => handleMove("junk")}
+            >
+              <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
               title="Move to Trash"
+              disabled={selectedEmails.length === 0}
+              onClick={() => handleMove("deleted")}
             >
               <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
             </button>
@@ -135,11 +162,11 @@ const EmailList = ({ emails, folderName }) => {
         ) : (
           emails.map((email) => (
             <EmailItem
-              key={email.uid}
+              key={email.messageId}
               email={email}
               isSelected={selectedEmails.includes(email.uid)}
               onToggleSelect={toggleEmailSelection}
-              showAvatar={true}
+              folderName={folderName}
             />
           ))
         )}
