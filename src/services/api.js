@@ -251,3 +251,25 @@ export const moveEmailApi = async (folder, emailIds, targetFolder) => {
 
   return data;
 };
+
+// DELETE ALL PERMANENT FROM TRASH
+export const deletePermanentAllApi = async () => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/emails/delete-permanent-all`, {
+    method: "DELETE", // ganti POST kalau route kamu pakai POST
+    headers: getAuthHeaders(),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to permanently delete all emails");
+  }
+
+  return data;
+};

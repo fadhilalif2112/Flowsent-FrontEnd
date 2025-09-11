@@ -154,10 +154,24 @@ const EmailList = ({ emails, folderName }) => {
       {/* Email List */}
       <div>
         {emails.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-            <Mail className="w-12 h-12 mb-3 text-gray-400" />
-            <p className="text-lg font-medium">Tidak ada email</p>
-            <p className="text-sm">Kotak masuk kamu kosong</p>
+          <div className="flex flex-col md:flex-row items-center justify-center py-24 px-6 space-y-6 md:space-y-0 md:space-x-10">
+            <div className="flex space-x-3 text-gray-300">
+              <Mail className="w-14 h-14" />
+              <Archive className="w-14 h-14" />
+              <Trash2 className="w-14 h-14" />
+            </div>
+            <div className="text-center md:text-left max-w-sm">
+              <h2 className="text-2xl font-bold text-gray-700">
+                No messages found
+              </h2>
+              <p className="text-sm text-gray-500 mt-2">
+                This {folderName || "folder"} doesn’t contain any emails at the
+                moment. Messages will appear here once available.
+              </p>
+              <p className="mt-4 text-xs text-gray-400 italic">
+                Try checking other folders or come back later.
+              </p>
+            </div>
           </div>
         ) : (
           emails.map((email) => (

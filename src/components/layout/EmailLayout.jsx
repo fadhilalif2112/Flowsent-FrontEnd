@@ -3,9 +3,21 @@ import EmailList from "../email/EmailList";
 import { useEmails } from "../../context/EmailContext";
 
 const EmailLayout = ({ folderName, customEmails }) => {
-  const { emails: allEmails, loading, error } = useEmails(); // ambil dari Context
+  const { emails: allEmails, loading, error, searchQuery } = useEmails(); // ambil dari Context
 
   const emails = customEmails || allEmails[folderName] || [];
+
+  //Filter Email for search if no search query return original email
+  const filteredEmails = emails.filter((email) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      email.sender?.toLowerCase().includes(q) ||
+      email.senderEmail?.toLowerCase().includes(q) ||
+      email.subject?.toLowerCase().includes(q) ||
+      email.body?.text?.toLowerCase().includes(q)
+    );
+  });
 
   if (loading) {
     return (
@@ -82,7 +94,7 @@ const EmailLayout = ({ folderName, customEmails }) => {
 
   return (
     <div className="flex flex-col h-screen">
-      <EmailList emails={emails} folderName={folderName} />
+      <EmailList emails={filteredEmails} folderName={folderName} />
     </div>
   );
 };

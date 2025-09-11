@@ -157,7 +157,13 @@ const LoginPage = () => {
 
               {/* LOGIN FORM */}
               {currentView === "login" && (
-                <div className="space-y-4 sm:space-y-6">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmit();
+                  }}
+                  className="space-y-4 sm:space-y-6"
+                >
                   {/* Error Message */}
                   {errorMessage && (
                     <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
@@ -234,6 +240,7 @@ const LoginPage = () => {
                       </span>
                     </label>
                     <button
+                      type="button"
                       onClick={() => setCurrentView("forgot")}
                       className="text-xs sm:text-sm text-slate-600 hover:text-slate-800 transition-colors"
                     >
@@ -243,7 +250,7 @@ const LoginPage = () => {
 
                   {/* Sign in button */}
                   <button
-                    onClick={handleSubmit}
+                    type="submit" // penting! biar Enter bisa trigger
                     disabled={loading}
                     className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 
                     ${
@@ -280,7 +287,7 @@ const LoginPage = () => {
                       "Sign In Now"
                     )}
                   </button>
-                </div>
+                </form>
               )}
 
               {/* FORGOT PASSWORD FORM */}

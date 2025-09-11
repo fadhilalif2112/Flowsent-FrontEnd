@@ -8,6 +8,7 @@ import {
   markAsFlaggedApi,
   markAsUnflaggedApi,
   moveEmailApi,
+  deletePermanentAllApi,
 } from "../services/api.js";
 
 const EmailContext = createContext();
@@ -17,6 +18,8 @@ export const EmailProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchEmails = async () => {
     try {
@@ -174,18 +177,42 @@ export const EmailProvider = ({ children }) => {
     }
   };
 
+  // Delete permanent all (empty trash)
+  const deletePermanentAll = async () => {
+    try {
+      // Optimistic update → langsung kosongkan trash
+      setEmails((prev) => {
+        const updated = { ...prev };
+        updated["deleted"] = [];
+        return updated;
+      });
+
+      await deletePermanentAllApi();
+      console.log("Trash emptied successfully");
+    } catch (err) {
+      console.error("Error emptying trash:", err);
+      // rollback via refresh
+      await refreshEmails();
+      setError(err.message);
+      throw err;
+    }
+  };
+
   return (
     <EmailContext.Provider
       value={{
         emails,
         loading,
         error,
+        searchQuery,
+        setSearchQuery,
         refreshEmails,
         downloadAttachment,
         markAsRead,
         markAsFlagged,
         markAsUnflagged,
         moveEmail,
+        deletePermanentAll,
       }}
     >
       {children}
