@@ -4,26 +4,9 @@ import "react-quill-new/dist/quill.snow.css";
 import { X, Send, Save, Paperclip } from "lucide-react";
 import ConfirmDialog from "../ui/ConfirmDialog";
 import Notification from "../ui/Notification";
-import { sendEmailApi } from "../../services/api";
+import { sendEmailApi, saveDraftApi } from "../../services/api";
 
-/**
- * ComposeModal Component
- *
- * @component
- * @description Modal component untuk compose email dengan rich text editor
- *
- * @param {Object} props - Component props
- * @param {boolean} props.isOpen - State untuk menampilkan/menyembunyikan modal
- * @param {Function} props.onClose - Handler untuk menutup modal
- *
- * @example
- * <ComposeModal
- *   isOpen={isComposeOpen}
- *   onClose={() => setIsComposeOpen(false)}
- *   defaultValues={{ to: "example@email.com" }}
- * />
- */
-const ComposeModal = ({ isOpen, onClose }) => {
+const ComposeModal = ({ isOpen, onClose, draft }) => {
   // State untuk form fields
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
@@ -93,21 +76,42 @@ const ComposeModal = ({ isOpen, onClose }) => {
     setLinkDialog({ show: false, selection: null });
   };
 
-  /**
-   * Effect untuk set default values dan focus
-   * Dijalankan ketika modal dibuka atau defaultValues berubah
-   */
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     setTo(defaultValues.to || "");
-  //     setCc(defaultValues.cc || "");
-  //     setBcc(defaultValues.bcc || "");
-  //     setSubject(defaultValues.subject || "");
-  //     setBody(defaultValues.body || "");
-  //     setErrors({});
-  //     hideNotification();
-  //   }
-  // }, [isOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      if (draft) {
+        setTo(draft.recipients?.map((r) => r.email).join(", ") || "");
+        setSubject(draft.subject || "");
+
+        let draftContent = "";
+        if (draft.body?.html) {
+          draftContent = draft.body.html;
+        } else if (draft.body?.text) {
+          draftContent = `<p>${draft.body.text.replace(/\n/g, "<br/>")}</p>`;
+        }
+
+        // kasih delay biar Quill udah mount
+        setTimeout(() => {
+          setBody(draftContent);
+        }, 0);
+
+        if (draft.rawAttachments) {
+          const normalized = draft.rawAttachments.map((att) => ({
+            name: att.filename,
+            size: att.size,
+            downloadUrl: att.download_url,
+            isServer: true, // tandai ini attachment lama
+          }));
+          setAttachments(normalized);
+        } else {
+          setAttachments([]);
+        }
+      } else {
+        resetForm();
+      }
+      setErrors({});
+      hideNotification();
+    }
+  }, [isOpen, draft]);
 
   /**
    * Konfigurasi toolbar untuk ReactQuill
@@ -140,21 +144,11 @@ const ComposeModal = ({ isOpen, onClose }) => {
     },
   };
 
-  /**
-   * Validasi email format
-   * @param {string} email - Email yang akan divalidasi
-   * @returns {boolean} - True jika valid
-   */
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email.trim());
   };
 
-  /**
-   * Validasi multiple emails (dipisah koma atau semicolon)
-   * @param {string} emails - String berisi satu atau lebih email
-   * @returns {boolean} - True jika semua email valid
-   */
   const validateEmails = (emails) => {
     if (!emails.trim()) return false;
 
@@ -165,10 +159,6 @@ const ComposeModal = ({ isOpen, onClose }) => {
     return emailList.length > 0 && emailList.every(validateEmail);
   };
 
-  /**
-   * Validasi form sebelum send/save
-   * @returns {boolean} - True jika form valid
-   */
   const validateForm = () => {
     const newErrors = {};
 
@@ -183,10 +173,6 @@ const ComposeModal = ({ isOpen, onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Handler untuk send email
-   * Validasi form, kemudian panggil callback atau log ke console
-   */
   const handleSendEmail = async () => {
     if (!validateForm()) {
       showNotification(
@@ -219,43 +205,31 @@ const ComposeModal = ({ isOpen, onClose }) => {
     }
   };
 
-  /**
-   * Handler untuk save draft
-   * Tidak perlu validasi ketat seperti send
-   */
   const handleSaveDraft = async () => {
-    const draftData = {
-      to: to.trim(),
-      subject: subject.trim() || "(No Subject)",
-      body: body,
-      timestamp: new Date().toISOString(),
-      isDraft: true,
-    };
-
     setDrafting(true);
     try {
-      console.log("Save Draft:", draftData);
-      showNotification(
-        "success",
-        "Draft saved successfully! (Check console for details)"
-      );
+      const result = await saveDraftApi({
+        to: to.trim(),
+        subject: subject.trim() || "(No Subject)",
+        body,
+        attachments,
+      });
 
-      // Reset form dan tutup modal setelah delay untuk melihat notification
+      showNotification("success", "Draft saved successfully!");
+      console.log("Server response (draft):", result);
+
       setTimeout(() => {
         resetForm();
         onClose();
       }, 1000);
     } catch (error) {
       console.error("Error saving draft:", error);
-      showNotification("error", "Failed to save draft. Please try again.");
+      showNotification("error", error.message || "Failed to save draft.");
     } finally {
       setDrafting(false);
     }
   };
 
-  /**
-   * Reset semua field form
-   */
   const resetForm = () => {
     setTo("");
     setSubject("");
@@ -264,9 +238,6 @@ const ComposeModal = ({ isOpen, onClose }) => {
     setAttachments([]);
   };
 
-  /**
-   * Handler untuk close modal dengan konfirmasi jika ada unsaved changes
-   */
   const handleClose = () => {
     const isBodyEmpty = !body || body === "<p><br></p>";
 
@@ -327,7 +298,9 @@ const ComposeModal = ({ isOpen, onClose }) => {
         <div className="bg-white rounded-lg shadow-2xl flex flex-col h-full">
           {/* Modal Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800">New Message</h2>
+            <h2 className="text-xl font-semibold text-gray-800">
+              {draft ? "Edit Draft" : "New Message"}
+            </h2>
             <div className="flex items-center gap-2">
               {/* Close Button */}
               <button
@@ -423,12 +396,14 @@ const ComposeModal = ({ isOpen, onClose }) => {
                       <span>
                         {file.name} ({Math.round(file.size / 1024)} KB)
                       </span>
-                      <button
-                        onClick={() => removeAttachment(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => removeAttachment(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -596,9 +571,9 @@ const ComposeModal = ({ isOpen, onClose }) => {
         <ConfirmDialog
           message="You have unsaved changes. Are you sure you want to close?"
           onConfirm={() => {
-            resetForm();
-            onClose();
-            setShowConfirm(false);
+            setShowConfirm(false); // 1. tutup confirm dulu
+            resetForm(); // 2. reset state form
+            onClose(); // 3. terakhir: close modal lewat parent
           }}
           onCancel={() => setShowConfirm(false)}
         />

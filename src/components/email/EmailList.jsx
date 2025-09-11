@@ -17,6 +17,12 @@ const EmailList = ({ emails, folderName }) => {
   const [selectedEmails, setSelectedEmails] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [draftData, setDraftData] = useState(null);
+
+  const handleOpenDraft = (email) => {
+    setDraftData(email);
+    setIsComposeOpen(true);
+  };
 
   const toggleSelectAll = () => {
     if (selectAll) {
@@ -181,6 +187,7 @@ const EmailList = ({ emails, folderName }) => {
               isSelected={selectedEmails.includes(email.uid)}
               onToggleSelect={toggleEmailSelection}
               folderName={folderName}
+              onOpenDraft={handleOpenDraft}
             />
           ))
         )}
@@ -189,6 +196,7 @@ const EmailList = ({ emails, folderName }) => {
       <ComposeModal
         isOpen={isComposeOpen}
         onClose={() => setIsComposeOpen(false)}
+        draft={draftData}
       />
     </div>
   );

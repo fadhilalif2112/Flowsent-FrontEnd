@@ -2,15 +2,15 @@
   "inbox": [
     {
       "uid": 14,
-      "messageId": "CANSg8Cv23TiCJaW1P8FjQMn=ZQGOQxaxP3MWKZ3=gGqeX2d6WA@mail.gmail.com",
       "folder": "INBOX",
+      "messageId": "CANSg8Cv23TiCJaW1P8FjQMn=ZQGOQxaxP3MWKZ3=gGqeX2d6WA@mail.gmail.com",
       "sender": "Alif Fadhil F",
       "senderEmail": "fadhilalif2112@gmail.com",
       "subject": "Tes Menerima Email",
       "preview": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Amet fugiat nobis\r\ntempora veniam natus adipisci earum placeat...",
       "timestamp": "22 August 2025, 14:39 GMT+0700",
       "seen": true,
-      "flagged": false,
+      "flagged": true,
       "answered": false,
       "recipients": [
         {
@@ -24,16 +24,49 @@
       "rawAttachments": [
         {
           "filename": "windah-basudara-windah.gif",
-          "content_type": null,
           "size": 6260430,
-          "download_url": "http://127.0.0.1:8000/download/uid/14/windah-basudara-windah.gif"
+          "download_url": "http://127.0.0.1:8000/emails/attachments/14/download/windah-basudara-windah.gif"
         }
       ]
     }
   ],
-  "sent": [{}],
-  "draft": [{}],
-  "deleted": [{}],
-  "junk": [{}],
-  "archive": [{}]
+  "draft": [
+    {
+      "uid": 19,
+      "folder": "Drafts",
+      "messageId": "0825aeadfabd3df857f73bde3f14f700@rekaprihatanto.web.id",
+      "sender": "Draft",
+      "senderEmail": "magang@rekaprihatanto.web.id",
+      "subject": "MEMBUAT DRAFT DI FLOWSENT DENGAN ATTACHMENT",
+      "preview": "COBA KIRIM DARI FLOWSENT DRAFTLorem ipsum dolor sit amet consectetur adipisicing elit. Natus ad maxime nam nemo in verit...",
+      "timestamp": "11 September 2025, 08:45 GMT+0000",
+      "seen": false,
+      "flagged": false,
+      "answered": false,
+      "recipients": [
+        {
+          "email": "fadhilalif2112@gmail.com"
+        }
+      ],
+      "body": {
+        "text": "COBA KIRIM DARI FLOWSENT DRAFTLorem ipsum dolor sit amet consectetur adipisicing elit. Natus ad maxime nam nemo in veritatis, dolores exercitationem neque repellat facilis aliquid vel quae aspernatur magni.",
+        "html": "<h1><span style=\"color: rgb(34, 34, 34); background-color: rgb(255, 255, 255);\">COBA KIRIM DARI FLOWSENT DRAFT</span></h1><h1><strong style=\"color: rgb(34, 34, 34); background-color: rgb(255, 255, 255);\"><em><u>Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus ad maxime nam nemo in veritatis, dolores exercitationem neque repellat facilis aliquid vel quae aspernatur magni.</u></em></strong></h1>"
+      },
+      "rawAttachments": [
+        {
+          "filename": "blank1.png",
+          "size": 2010,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/19/download/blank1.png"
+        },
+        {
+          "filename": "blank2.png",
+          "size": 2032,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/19/download/blank2.png"
+        }
+      ]
+    }
+  ],
+  "deleted": [],
+  "junk": [],
+  "archive": []
 }

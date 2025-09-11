@@ -273,3 +273,40 @@ export const deletePermanentAllApi = async () => {
 
   return data;
 };
+
+// SAVE DRAFT
+export const saveDraftApi = async ({ to, subject, body, attachments }) => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  const formData = new FormData();
+  if (to) formData.append("to", to);
+  if (subject) formData.append("subject", subject);
+  if (body) formData.append("body", body);
+
+  if (attachments && attachments.length > 0) {
+    attachments.forEach((file) => {
+      formData.append("attachments[]", file);
+    });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/emails/draft`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to save draft");
+  }
+
+  return data;
+};

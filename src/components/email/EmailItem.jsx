@@ -12,7 +12,13 @@ import {
 } from "lucide-react";
 import { useEmails } from "../../context/EmailContext";
 
-const EmailItem = ({ email, isSelected, onToggleSelect, folderName }) => {
+const EmailItem = ({
+  email,
+  isSelected,
+  onToggleSelect,
+  folderName,
+  onOpenDraft,
+}) => {
   const [isStarred, setIsStarred] = useState(email.flagged); // flagged dari backend
   const [isHovered, setIsHovered] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
@@ -131,9 +137,14 @@ const EmailItem = ({ email, isSelected, onToggleSelect, folderName }) => {
 
   const handleEmailClick = () => {
     const currentFolder = getCurrentFolder();
-    navigate(`/${currentFolder}/${email.uid}`, {
-      state: { from: currentFolder },
-    });
+
+    if (currentFolder === "draft") {
+      onOpenDraft(email); // ✅ minta parent buka modal
+    } else {
+      navigate(`/${currentFolder}/${email.uid}`, {
+        state: { from: currentFolder },
+      });
+    }
   };
 
   return (
