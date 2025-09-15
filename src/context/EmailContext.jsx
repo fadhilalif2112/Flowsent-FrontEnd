@@ -10,6 +10,7 @@ import {
   moveEmailApi,
   deletePermanentAllApi,
 } from "../services/api.js";
+import Notification from "../components/ui/Notification.jsx";
 
 const EmailContext = createContext();
 
@@ -20,6 +21,28 @@ export const EmailProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [notification, setNotification] = useState({
+    show: false,
+    type: "info",
+    message: "",
+    duration: 4000,
+    position: "top-center",
+  });
+
+  const showNotification = (
+    type,
+    message,
+    duration = 4000,
+    position = "top-center"
+  ) => {
+    console.log(`[Notification] ${type.toUpperCase()}: ${message}`); // ⬅️ log tetap ada
+    setNotification({ show: true, type, message, duration, position });
+  };
+
+  const hideNotification = () => {
+    setNotification((prev) => ({ ...prev, show: false }));
+  };
 
   const fetchEmails = async () => {
     try {
@@ -213,9 +236,17 @@ export const EmailProvider = ({ children }) => {
         markAsUnflagged,
         moveEmail,
         deletePermanentAll,
+        showNotification,
       }}
     >
       {children}
+      <Notification
+        type={notification.type}
+        message={notification.message}
+        show={notification.show}
+        duration={notification.duration}
+        onClose={hideNotification}
+      />
     </EmailContext.Provider>
   );
 };

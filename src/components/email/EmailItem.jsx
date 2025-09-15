@@ -29,6 +29,7 @@ const EmailItem = ({
     markAsUnflagged,
     markAsRead,
     moveEmail,
+    showNotification,
   } = useEmails();
 
   // Hooks yang diperlukan untuk navigasi
@@ -51,18 +52,18 @@ const EmailItem = ({
 
     try {
       if (prevStarred) {
-        // sebelumnya starred → unflag
         await markAsUnflagged(folderName, email.uid);
         console.log("Unflagged berhasil");
+        showNotification("success", "Email unstarred", 4000, "top-center");
       } else {
-        // sebelumnya unstarred → flag
         await markAsFlagged(folderName, email.uid);
         console.log("Flagged berhasil");
+        showNotification("success", "Email starred", 4000, "top-center");
       }
     } catch (err) {
       console.error("Failed to toggle star:", err);
-      // rollback kalau gagal
       setIsStarred(prevStarred);
+      showNotification("error", "Failed to toggle star", 4000, "top-center");
     }
   };
 
@@ -76,10 +77,11 @@ const EmailItem = ({
     try {
       await markAsRead(folderName, email.uid);
       console.log("Email berhasil ditandai sebagai read");
+      showNotification("success", "Email marked as read", 4000, "bottom-left");
     } catch (err) {
       console.error("Failed to mark as read:", err);
-      // rollback jika gagal
       email.seen = false;
+      showNotification("error", "Failed to mark as read", 4000, "bottom-left");
     }
   };
 
@@ -89,8 +91,20 @@ const EmailItem = ({
     try {
       await moveEmail(folderName, [email.uid], targetFolder);
       console.log(`Email berhasil dipindahkan ke ${targetFolder}`);
+      showNotification(
+        "success",
+        `Email moved to ${targetFolder}`,
+        4000,
+        "bottom-left"
+      );
     } catch (err) {
       console.error(`Gagal memindahkan email ke ${targetFolder}:`, err);
+      showNotification(
+        "error",
+        `Failed to move to ${targetFolder}`,
+        4000,
+        "bottom-left"
+      );
     }
   };
 
@@ -371,9 +385,29 @@ const EmailItem = ({
                   </span>
                 )}
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    downloadAttachment(email.uid, attachment.filename);
+                    try {
+                      await downloadAttachment(email.uid, attachment.filename);
+                      console.log(`Downloaded ${attachment.filename}`);
+                      showNotification(
+                        "success",
+                        `Downloaded ${attachment.filename}`,
+                        4000,
+                        "top-center"
+                      );
+                    } catch (err) {
+                      console.error(
+                        `Failed to download ${attachment.filename}:`,
+                        err
+                      );
+                      showNotification(
+                        "error",
+                        `Failed to download ${attachment.filename}`,
+                        4000,
+                        "top-center"
+                      );
+                    }
                   }}
                   className="p-1 hover:bg-blue-200 rounded transition-colors"
                   title="Download"

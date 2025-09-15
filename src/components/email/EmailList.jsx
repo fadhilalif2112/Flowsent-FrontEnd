@@ -12,7 +12,8 @@ import ComposeModal from "../compose/ComposeModal";
 import { useEmails } from "../../context/EmailContext";
 
 const EmailList = ({ emails, folderName }) => {
-  const { refreshEmails, markAsRead, moveEmail } = useEmails();
+  const { refreshEmails, markAsRead, moveEmail, showNotification } =
+    useEmails();
 
   const [selectedEmails, setSelectedEmails] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -60,10 +61,24 @@ const EmailList = ({ emails, folderName }) => {
         await markAsRead(folderName, emailId);
       }
 
+      console.log("Emails berhasil ditandai sebagai read");
+      showNotification(
+        "success",
+        "Selected emails marked as read",
+        4000,
+        "bottom-left"
+      );
+
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
       console.error("Failed to mark as read:", err);
+      showNotification(
+        "error",
+        "Failed to mark emails as read",
+        4000,
+        "bottom-left"
+      );
       // rollback
       prevState.forEach((prevEmail) => {
         const idx = emails.findIndex((e) => e.uid === prevEmail.uid);
@@ -78,13 +93,24 @@ const EmailList = ({ emails, folderName }) => {
   const handleMove = async (targetFolder) => {
     try {
       await moveEmail(folderName, selectedEmails, targetFolder);
-      console.log("Move emails success");
+      console.log(`Move emails success to ${targetFolder}`);
+      showNotification(
+        "success",
+        `Moved to ${targetFolder}`,
+        4000,
+        "bottom-left"
+      );
 
-      // reset selection
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
       console.error(`Failed to move emails to ${targetFolder}:`, err);
+      showNotification(
+        "error",
+        `Failed to move to ${targetFolder}`,
+        4000,
+        "bottom-left"
+      );
     }
   };
 
@@ -109,7 +135,26 @@ const EmailList = ({ emails, folderName }) => {
             )}
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400"
-              onClick={refreshEmails}
+              onClick={async () => {
+                try {
+                  await refreshEmails();
+                  console.log("Emails refreshed");
+                  showNotification(
+                    "success",
+                    "Emails refreshed",
+                    3000,
+                    "top-center"
+                  );
+                } catch (err) {
+                  console.error("Failed to refresh emails:", err);
+                  showNotification(
+                    "error",
+                    "Failed to refresh emails",
+                    3000,
+                    "top-center"
+                  );
+                }
+              }}
               title="Refresh"
             >
               <RefreshCcw className="w-4 h-4 md:w-5 md:h-5" />

@@ -3,8 +3,8 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { X, Send, Save, Paperclip } from "lucide-react";
 import ConfirmDialog from "../ui/ConfirmDialog";
-import Notification from "../ui/Notification";
 import { sendEmailApi, saveDraftApi } from "../../services/api";
+import { useEmails } from "../../context/EmailContext";
 
 const ComposeModal = ({ isOpen, onClose, draft }) => {
   // State untuk form fields
@@ -13,6 +13,7 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [drafting, setDrafting] = useState(false);
+  const { showNotification } = useEmails();
 
   // State untuk attachment
   const [attachments, setAttachments] = useState([]);
@@ -30,13 +31,6 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
   // State untuk validasi
   const [errors, setErrors] = useState({});
 
-  // State untuk Notification
-  const [notification, setNotification] = useState({
-    show: false,
-    type: "info",
-    message: "",
-  });
-
   // Ref untuk focus
   const toInputRef = useRef(null);
   const quillRef = useRef(null);
@@ -45,20 +39,6 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
   const handleInsertLink = (selection) => {
     setLinkDialog({ show: true, selection });
     setLinkUrl("");
-  };
-
-  // Helper function untuk menampilkan notification
-  const showNotification = (type, message) => {
-    setNotification({
-      show: true,
-      type,
-      message,
-    });
-  };
-
-  // Helper function untuk menutup notification
-  const hideNotification = () => {
-    setNotification((prev) => ({ ...prev, show: false }));
   };
 
   // Handler untuk apply link
@@ -109,7 +89,6 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
         resetForm();
       }
       setErrors({});
-      hideNotification();
     }
   }, [isOpen, draft]);
 
@@ -162,7 +141,6 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Validasi To field (required)
     if (!to.trim()) {
       newErrors.to = "Recipient email is required";
     } else if (!validateEmails(to)) {
@@ -170,17 +148,22 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const isValid = Object.keys(newErrors).length === 0;
+    if (!isValid) {
+      showNotification(
+        "error",
+        "Please fix the validation errors before sending.",
+        4000,
+        "top-center"
+      );
+    }
+
+    return isValid;
   };
 
   const handleSendEmail = async () => {
-    if (!validateForm()) {
-      showNotification(
-        "error",
-        "Please fix the validation errors before sending."
-      );
-      return;
-    }
+    if (!validateForm()) return;
     setSending(true);
     try {
       const result = await sendEmailApi({
@@ -190,7 +173,12 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
         attachments,
       });
 
-      showNotification("success", "Email sent successfully!");
+      showNotification(
+        "success",
+        "Email sent successfully!",
+        3000,
+        "top-center"
+      );
       console.log("Server response:", result);
 
       setTimeout(() => {
@@ -199,7 +187,12 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
       }, 1000);
     } catch (error) {
       console.error("Error sending email:", error);
-      showNotification("error", error.message || "Failed to send email.");
+      showNotification(
+        "error",
+        error.message || "Failed to send email.",
+        4000,
+        "top-center"
+      );
     } finally {
       setSending(false);
     }
@@ -215,7 +208,12 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
         attachments,
       });
 
-      showNotification("success", "Draft saved successfully!");
+      showNotification(
+        "success",
+        "Draft saved successfully!",
+        3000,
+        "top-center"
+      );
       console.log("Server response (draft):", result);
 
       setTimeout(() => {
@@ -224,7 +222,12 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
       }, 1000);
     } catch (error) {
       console.error("Error saving draft:", error);
-      showNotification("error", error.message || "Failed to save draft.");
+      showNotification(
+        "error",
+        error.message || "Failed to save draft.",
+        4000,
+        "top-center"
+      );
     } finally {
       setDrafting(false);
     }
@@ -262,7 +265,9 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
         "warning",
         `Some files are too large (max 10MB): ${oversizedFiles
           .map((f) => f.name)
-          .join(", ")}`
+          .join(", ")}`,
+        5000,
+        "top-center"
       );
       const validFiles = files.filter((file) => file.size <= maxSize);
       setAttachments((prev) => [...prev, ...validFiles]);
@@ -271,7 +276,9 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
       if (files.length > 0) {
         showNotification(
           "info",
-          `${files.length} file(s) attached successfully.`
+          `${files.length} file(s) attached successfully.`,
+          3000,
+          "bottom-left"
         );
       }
     }
@@ -280,7 +287,7 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
   // Handler untuk menghapus attachment
   const removeAttachment = (index) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
-    showNotification("info", "Attachment removed.");
+    showNotification("info", "Attachment removed.", 2000, "bottom-left");
   };
 
   // Jika modal tidak open, return null
@@ -519,15 +526,6 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
           </>
         </div>
       </div>
-      {/* Notification Component */}
-      <Notification
-        type={notification.type}
-        message={notification.message}
-        show={notification.show}
-        onClose={hideNotification}
-        position="top-center"
-        duration={2000}
-      />
 
       {/* Link Insertion Dialog */}
       {linkDialog.show && (

@@ -40,7 +40,7 @@ const MainLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
 
-  const { searchQuery, setSearchQuery } = useEmails();
+  const { searchQuery, setSearchQuery, showNotification } = useEmails();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -103,9 +103,16 @@ const MainLayout = ({ children }) => {
   const handleLogout = async () => {
     try {
       await logout();
+      showNotification("success", "Logout successful!", 3000, "top-center");
       navigate("/login");
     } catch (err) {
-      alert(err.message);
+      console.error("Logout error:", err);
+      showNotification(
+        "error",
+        err.message || "Logout failed.",
+        4000,
+        "top-center"
+      );
       navigate("/login");
     }
   };
