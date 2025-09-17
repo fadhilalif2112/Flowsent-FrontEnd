@@ -7,6 +7,7 @@ import {
   Plus,
   RefreshCcw,
   CircleAlert,
+  Inbox,
 } from "lucide-react";
 import ComposeModal from "../compose/ComposeModal";
 import { useEmails } from "../../context/EmailContext";
@@ -19,6 +20,14 @@ const EmailList = ({ emails, folderName }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [draftData, setDraftData] = useState(null);
+
+  // 🔑 kondisi folder
+  const isInbox = folderName === "inbox";
+  const isArchive = folderName === "archive";
+  const isJunk = folderName === "junk";
+  const isTrash = folderName === "deleted";
+  const isSent = folderName === "sent";
+  const isDraft = folderName === "draft";
 
   const handleOpenDraft = (email) => {
     setDraftData(email);
@@ -49,7 +58,6 @@ const EmailList = ({ emails, folderName }) => {
   // ✅ Optimistic Mark as Read
   const handleMarkAsRead = async () => {
     const prevState = [...emails];
-
     try {
       emails.forEach((email) => {
         if (selectedEmails.includes(email.uid)) {
@@ -61,7 +69,6 @@ const EmailList = ({ emails, folderName }) => {
         await markAsRead(folderName, emailId);
       }
 
-      console.log("Emails berhasil ditandai sebagai read");
       showNotification(
         "success",
         "Selected emails marked as read",
@@ -89,18 +96,16 @@ const EmailList = ({ emails, folderName }) => {
     }
   };
 
-  // ✅ Move emails to folder (Archive / Trash)
+  // ✅ Move emails
   const handleMove = async (targetFolder) => {
     try {
       await moveEmail(folderName, selectedEmails, targetFolder);
-      console.log(`Move emails success to ${targetFolder}`);
       showNotification(
         "success",
         `Moved to ${targetFolder}`,
         4000,
         "bottom-left"
       );
-
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
@@ -112,6 +117,14 @@ const EmailList = ({ emails, folderName }) => {
         "bottom-left"
       );
     }
+  };
+
+  const handleDeletePermanent = () => {
+    console.log("Permanent delete triggered for:", selectedEmails);
+    showNotification("info", "Permanent delete clicked", 4000, "bottom-left");
+    // TODO: API permanent delete
+    setSelectedEmails([]);
+    setSelectAll(false);
   };
 
   const handleComposeClick = () => setIsComposeOpen(true);
@@ -129,16 +142,27 @@ const EmailList = ({ emails, folderName }) => {
               className="w-4 h-4 md:w-5 md:h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             {selectedEmails.length > 0 && (
-              <span className="text-sm text-gray-600">
-                {selectedEmails.length} selected
-              </span>
+              <>
+                <span className="text-sm text-gray-600">
+                  {selectedEmails.length} selected
+                </span>
+                {isTrash && (
+                  <button
+                    onClick={handleDeletePermanent}
+                    className="ml-2 text-sm font-medium text-red-600 hover:text-red-800 hover:underline"
+                  >
+                    Delete Forever
+                  </button>
+                )}
+              </>
             )}
+
+            {/* Refresh */}
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400"
               onClick={async () => {
                 try {
                   await refreshEmails();
-                  console.log("Emails refreshed");
                   showNotification(
                     "success",
                     "Emails refreshed",
@@ -159,30 +183,56 @@ const EmailList = ({ emails, folderName }) => {
             >
               <RefreshCcw className="w-4 h-4 md:w-5 md:h-5" />
             </button>
-            <button
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
-              title="Archive"
-              disabled={selectedEmails.length === 0}
-              onClick={() => handleMove("archive")}
-            >
-              <Archive className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
-            <button
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-              title="Spam"
-              disabled={selectedEmails.length === 0}
-              onClick={() => handleMove("junk")}
-            >
-              <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
-            <button
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-              title="Move to Trash"
-              disabled={selectedEmails.length === 0}
-              onClick={() => handleMove("deleted")}
-            >
-              <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
+
+            {/* Move to Archive */}
+            {!isArchive && (
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
+                title="Archive"
+                disabled={selectedEmails.length === 0}
+                onClick={() => handleMove("archive")}
+              >
+                <Archive className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+            )}
+
+            {/* Move to Spam */}
+            {!isJunk && (
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                title="Spam"
+                disabled={selectedEmails.length === 0}
+                onClick={() => handleMove("junk")}
+              >
+                <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+            )}
+
+            {/* Move to Trash  */}
+            {!isTrash && (
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                title="Move to Trash"
+                disabled={selectedEmails.length === 0}
+                onClick={() => handleMove("deleted")}
+              >
+                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+            )}
+
+            {/* Move to Inbox */}
+            {!isInbox && !isSent && !isDraft && (
+              <button
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
+                title="Move to Inbox"
+                disabled={selectedEmails.length === 0}
+                onClick={() => handleMove("inbox")}
+              >
+                <Inbox className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+            )}
+
+            {/* Mark as Read */}
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
               onClick={handleMarkAsRead}
@@ -192,6 +242,8 @@ const EmailList = ({ emails, folderName }) => {
               <Mail className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
+
+          {/* Compose */}
           <button
             className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium flex items-center space-x-1 text-sm md:text-base"
             onClick={handleComposeClick}
@@ -217,7 +269,7 @@ const EmailList = ({ emails, folderName }) => {
               </h2>
               <p className="text-sm text-gray-500 mt-2">
                 This {folderName || "folder"} doesn’t contain any emails at the
-                moment. Messages will appear here once available.
+                moment.
               </p>
               <p className="mt-4 text-xs text-gray-400 italic">
                 Try checking other folders or come back later.

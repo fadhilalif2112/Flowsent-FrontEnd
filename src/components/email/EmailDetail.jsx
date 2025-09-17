@@ -15,17 +15,53 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEmails } from "../../context/EmailContext";
 
-const EmailDetail = ({ email, loading = false }) => {
+const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { downloadAttachment } = useEmails();
+  const {
+    downloadAttachment,
+    markAsFlagged,
+    markAsUnflagged,
+    moveEmail,
+    showNotification,
+  } = useEmails();
 
   // Get the previous folder from state or default to inbox
   const previousFolder = location.state?.from || "inbox";
 
   const handleBack = () => {
     navigate(`/${previousFolder}`);
+  };
+
+  // Handler Star
+  const handleStarToggle = async () => {
+    try {
+      if (email.flagged) {
+        await markAsUnflagged(previousFolder, email.uid);
+        email.flagged = false;
+        showNotification("success", "Email unstarred", 4000, "top-center");
+      } else {
+        await markAsFlagged(previousFolder, email.uid);
+        email.flagged = true;
+        showNotification("success", "Email starred", 4000, "top-center");
+      }
+    } catch (err) {
+      console.error("Failed to toggle star:", err);
+      showNotification("error", "Failed to toggle star", 4000, "top-center");
+    }
+  };
+
+  // Handler Move to Trash
+  const handleMoveToTrash = async () => {
+    try {
+      await moveEmail(previousFolder, [email.uid], "deleted");
+      showNotification("success", "Email moved to Trash", 4000, "bottom-left");
+      navigate(`/${previousFolder}`); // balik ke folder asal
+    } catch (err) {
+      console.error("Failed to move email to Trash:", err);
+      showNotification("error", "Failed to move to Trash", 4000, "bottom-left");
+    }
   };
 
   const formatFileSize = (bytes) => {
@@ -150,30 +186,38 @@ const EmailDetail = ({ email, loading = false }) => {
 
           <div className="flex items-center space-x-2 flex-shrink-0">
             <button
+              onClick={() => onReply?.(email)}
               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Reply"
             >
               <Reply className="w-5 h-5" />
             </button>
             <button
+              onClick={() => onForward?.(email)}
               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Forward"
             >
               <Forward className="w-5 h-5" />
             </button>
+
+            {/* handler star */}
             <button
+              onClick={handleStarToggle}
               className={`p-2 rounded-lg transition-colors ${
                 email.flagged
                   ? "text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50"
                   : "text-gray-400 hover:text-yellow-500 hover:bg-yellow-50"
               }`}
-              title="Star"
+              title={email.flagged ? "Unstar" : "Star"}
             >
               <Star
                 className={`w-5 h-5 ${email.flagged ? "fill-current" : ""}`}
               />
             </button>
+
+            {/* handler move to trash */}
             <button
+              onClick={handleMoveToTrash}
               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               title="Delete"
             >

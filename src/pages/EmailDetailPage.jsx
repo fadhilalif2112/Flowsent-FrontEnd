@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import EmailDetail from "../components/email/EmailDetail";
 import { useEmails } from "../context/EmailContext";
+import ComposeModal from "../components/compose/ComposeModal";
 
 const EmailDetailPage = () => {
   const params = useParams();
@@ -9,6 +10,44 @@ const EmailDetailPage = () => {
   const { emails, loading: emailsLoading, markAsRead } = useEmails();
   const [email, setEmail] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+  const [composeDraft, setComposeDraft] = useState(null);
+
+  const handleReply = (email) => {
+    setComposeDraft({
+      recipients: [{ email: email.senderEmail }],
+      subject: email.subject.startsWith("Re:")
+        ? email.subject
+        : "Re: " + email.subject,
+      body: {
+        html: `<br/><br/>On ${email.timestamp}, ${
+          email.sender
+        } wrote:<blockquote>${
+          email.body?.html || email.body?.text || ""
+        }</blockquote>`,
+      },
+    });
+    setIsComposeOpen(true);
+  };
+
+  const handleForward = (email) => {
+    setComposeDraft({
+      recipients: [],
+      subject: email.subject.startsWith("Fwd:")
+        ? email.subject
+        : "Fwd: " + email.subject,
+      body: {
+        html: `<br/><br/>---------- Forwarded message ----------<br/>
+               From: ${email.sender} &lt;${email.senderEmail}&gt;<br/>
+               Date: ${email.timestamp}<br/>
+               Subject: ${email.subject}<br/><br/>${
+          email.body?.html || email.body?.text || ""
+        }`,
+      },
+      rawAttachments: email.rawAttachments || [],
+    });
+    setIsComposeOpen(true);
+  };
 
   useEffect(() => {
     const findEmail = () => {
@@ -67,7 +106,21 @@ const EmailDetailPage = () => {
     return <EmailDetail loading={true} />;
   }
 
-  return <EmailDetail email={email} loading={loading} />;
+  return (
+    <>
+      <EmailDetail
+        email={email}
+        loading={loading}
+        onReply={handleReply}
+        onForward={handleForward}
+      />
+      <ComposeModal
+        isOpen={isComposeOpen}
+        onClose={() => setIsComposeOpen(false)}
+        draft={composeDraft}
+      />
+    </>
+  );
 };
 
 export default EmailDetailPage;
