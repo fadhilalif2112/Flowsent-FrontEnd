@@ -11,6 +11,7 @@ const EmailDetailPage = () => {
   const [email, setEmail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
+
   const [composeDraft, setComposeDraft] = useState(null);
 
   const handleReply = (email) => {

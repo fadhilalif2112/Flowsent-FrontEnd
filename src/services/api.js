@@ -60,7 +60,7 @@ export const logout = async () => {
   return data;
 };
 
-// FETCH EMAILS
+// FETCH ALL EMAILS
 export const fetchEmailsApi = async () => {
   const token = localStorage.getItem("authToken");
 
