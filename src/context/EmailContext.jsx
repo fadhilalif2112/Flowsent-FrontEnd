@@ -7,8 +7,8 @@ import {
   markAsReadApi,
   markAsFlaggedApi,
   markAsUnflaggedApi,
-  moveEmailApi,
   deletePermanentAllApi,
+  moveEmailApi,
 } from "../services/api.js";
 import Notification from "../components/ui/Notification.jsx";
 
@@ -77,10 +77,12 @@ export const EmailProvider = ({ children }) => {
   };
 
   // helper untuk update 1 email di state secara imutabel
-  const updateEmailInState = (folderKey, uid, changes) => {
+  const updateEmailInState = (folderKey, messageId, changes) => {
     setEmails((prev) => {
       const list = prev?.[folderKey] || [];
-      const idx = list.findIndex((e) => String(e.uid) === String(uid));
+      const idx = list.findIndex(
+        (e) => String(e.messageId) === String(messageId)
+      );
       if (idx === -1) return prev;
       const updatedList = [...list];
       updatedList[idx] = { ...updatedList[idx], ...changes };
@@ -91,22 +93,22 @@ export const EmailProvider = ({ children }) => {
   // === Handlers ===
 
   // Mark as read
-  const markAsRead = async (folder, emailId) => {
-    const prev = {}; // simpan prev untuk rollback
+  const markAsRead = async (folder, messageId) => {
+    const prev = {};
     try {
-      // optimistic
       const list = emails?.[folder] || [];
-      const target = list.find((e) => String(e.uid) === String(emailId));
+      const target = list.find(
+        (e) => String(e.messageId) === String(messageId)
+      );
       if (target) {
         prev.seen = target.seen;
-        updateEmailInState(folder, emailId, { seen: true });
+        updateEmailInState(folder, messageId, { seen: true });
       }
 
-      await markAsReadApi(folder, emailId);
+      await markAsReadApi(folder, messageId);
     } catch (err) {
-      // rollback
       if (prev.hasOwnProperty("seen")) {
-        updateEmailInState(folder, emailId, { seen: prev.seen });
+        updateEmailInState(folder, messageId, { seen: prev.seen });
       }
       console.error("Error marking email as read:", err);
       setError(err.message);
@@ -115,20 +117,22 @@ export const EmailProvider = ({ children }) => {
   };
 
   // Flag
-  const markAsFlagged = async (folder, emailId) => {
+  const markAsFlagged = async (folder, messageId) => {
     const prev = {};
     try {
       const list = emails?.[folder] || [];
-      const target = list.find((e) => String(e.uid) === String(emailId));
+      const target = list.find(
+        (e) => String(e.messageId) === String(messageId)
+      );
       if (target) {
         prev.flagged = target.flagged;
-        updateEmailInState(folder, emailId, { flagged: true });
+        updateEmailInState(folder, messageId, { flagged: true });
       }
 
-      await markAsFlaggedApi(folder, emailId);
+      await markAsFlaggedApi(folder, messageId);
     } catch (err) {
       if (prev.hasOwnProperty("flagged")) {
-        updateEmailInState(folder, emailId, { flagged: prev.flagged });
+        updateEmailInState(folder, messageId, { flagged: prev.flagged });
       }
       console.error("Error flagging email:", err);
       setError(err.message);
@@ -137,65 +141,25 @@ export const EmailProvider = ({ children }) => {
   };
 
   // Unflag
-  const markAsUnflagged = async (folder, emailId) => {
+  const markAsUnflagged = async (folder, messageId) => {
     const prev = {};
     try {
       const list = emails?.[folder] || [];
-      const target = list.find((e) => String(e.uid) === String(emailId));
+      const target = list.find(
+        (e) => String(e.messageId) === String(messageId)
+      );
       if (target) {
         prev.flagged = target.flagged;
-        updateEmailInState(folder, emailId, { flagged: false });
+        updateEmailInState(folder, messageId, { flagged: false });
       }
 
-      await markAsUnflaggedApi(folder, emailId);
+      await markAsUnflaggedApi(folder, messageId);
     } catch (err) {
       if (prev.hasOwnProperty("flagged")) {
-        updateEmailInState(folder, emailId, { flagged: prev.flagged });
+        updateEmailInState(folder, messageId, { flagged: prev.flagged });
       }
       console.error("Error unflagging email:", err);
       setError(err.message);
-      throw err;
-    }
-  };
-
-  //move email
-  const moveEmail = async (folder, emailIds, targetFolder) => {
-    try {
-      // pastikan selalu array
-      const ids = Array.isArray(emailIds) ? emailIds : [emailIds];
-
-      // Optimistic UI: update state langsung
-      setEmails((prev) => {
-        const updated = { ...prev };
-
-        // Ambil semua email yang akan dipindah
-        const movedEmails =
-          prev[folder]?.filter((email) => ids.includes(email.uid)) || [];
-
-        // Hapus dari folder asal
-        if (updated[folder]) {
-          updated[folder] = updated[folder].filter(
-            (email) => !ids.includes(email.uid)
-          );
-        }
-
-        // Tambahkan ke folder tujuan
-        if (movedEmails.length > 0) {
-          if (!updated[targetFolder]) {
-            updated[targetFolder] = [];
-          }
-          updated[targetFolder] = [...movedEmails, ...updated[targetFolder]];
-        }
-
-        return updated;
-      });
-
-      // Panggil API backend
-      await moveEmailApi(folder, ids, targetFolder);
-    } catch (err) {
-      console.error("Error moving email:", err);
-      // Rollback jika gagal
-      await refreshEmails();
       throw err;
     }
   };
@@ -221,6 +185,46 @@ export const EmailProvider = ({ children }) => {
     }
   };
 
+  // move email by messageId
+  const moveEmail = async (folder, messageIds, targetFolder) => {
+    try {
+      const ids = Array.isArray(messageIds) ? messageIds : [messageIds];
+
+      // Optimistic UI: update state langsung
+      setEmails((prev) => {
+        const updated = { ...prev };
+
+        // Ambil semua email yang akan dipindah (berdasarkan messageId)
+        const movedEmails =
+          prev[folder]?.filter((email) => ids.includes(email.messageId)) || [];
+
+        // Hapus dari folder asal
+        if (updated[folder]) {
+          updated[folder] = updated[folder].filter(
+            (email) => !ids.includes(email.messageId)
+          );
+        }
+
+        // Tambahkan ke folder tujuan
+        if (movedEmails.length > 0) {
+          if (!updated[targetFolder]) {
+            updated[targetFolder] = [];
+          }
+          updated[targetFolder] = [...movedEmails, ...updated[targetFolder]];
+        }
+
+        return updated;
+      });
+
+      // Panggil API backend
+      await moveEmailApi(folder, ids, targetFolder);
+    } catch (err) {
+      console.error("Error moving email by messageId:", err);
+      await refreshEmails(); // rollback kalau gagal
+      throw err;
+    }
+  };
+
   return (
     <EmailContext.Provider
       value={{
@@ -234,9 +238,9 @@ export const EmailProvider = ({ children }) => {
         markAsRead,
         markAsFlagged,
         markAsUnflagged,
-        moveEmail,
         deletePermanentAll,
         showNotification,
+        moveEmail,
       }}
     >
       {children}

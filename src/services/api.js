@@ -160,19 +160,13 @@ export const sendEmailApi = async ({ to, subject, body, attachments }) => {
 };
 
 // MARK AS READ
-export const markAsReadApi = async (folder, emailId) => {
-  const token = localStorage.getItem("authToken");
-
-  if (!token) {
-    throw new Error("Authentication token not found. Please login again.");
-  }
-
+export const markAsReadApi = async (folder, messageId) => {
   const response = await fetch(`${API_BASE_URL}/emails/mark-as-read`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify({
       folder: folder,
-      email_id: emailId,
+      message_id: messageId,
     }),
   });
 
@@ -186,13 +180,13 @@ export const markAsReadApi = async (folder, emailId) => {
 };
 
 // MARK AS FLAGGED
-export const markAsFlaggedApi = async (folder, emailId) => {
+export const markAsFlaggedApi = async (folder, messageId) => {
   const response = await fetch(`${API_BASE_URL}/emails/flag`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify({
       folder: folder,
-      email_id: emailId,
+      message_id: messageId,
     }),
   });
 
@@ -206,13 +200,13 @@ export const markAsFlaggedApi = async (folder, emailId) => {
 };
 
 // MARK AS UNFLAGGED
-export const markAsUnflaggedApi = async (folder, emailId) => {
+export const markAsUnflaggedApi = async (folder, messageId) => {
   const response = await fetch(`${API_BASE_URL}/emails/unflag`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify({
       folder: folder,
-      email_id: emailId,
+      message_id: messageId, // ✅
     }),
   });
 
@@ -226,7 +220,7 @@ export const markAsUnflaggedApi = async (folder, emailId) => {
 };
 
 // MOVE EMAIL
-export const moveEmailApi = async (folder, emailIds, targetFolder) => {
+export const moveEmailApi = async (folder, messageIds, targetFolder) => {
   const token = localStorage.getItem("authToken");
 
   if (!token) {
@@ -238,7 +232,7 @@ export const moveEmailApi = async (folder, emailIds, targetFolder) => {
     headers: getAuthHeaders(),
     body: JSON.stringify({
       folder: folder,
-      email_ids: emailIds,
+      message_ids: messageIds, // ✅ ganti email_ids -> message_ids
       target_folder: targetFolder,
     }),
   });

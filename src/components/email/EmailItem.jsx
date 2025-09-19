@@ -30,8 +30,8 @@ const EmailItem = ({
     markAsFlagged,
     markAsUnflagged,
     markAsRead,
-    moveEmail,
     showNotification,
+    moveEmail,
   } = useEmails();
 
   const navigate = useNavigate();
@@ -48,10 +48,10 @@ const EmailItem = ({
     setIsStarred(!isStarred);
     try {
       if (prevStarred) {
-        await markAsUnflagged(folderName, email.uid);
+        await markAsUnflagged(folderName, email.messageId);
         showNotification("success", "Email unstarred", 4000, "top-center");
       } else {
-        await markAsFlagged(folderName, email.uid);
+        await markAsFlagged(folderName, email.messageId);
         showNotification("success", "Email starred", 4000, "top-center");
       }
     } catch (err) {
@@ -65,8 +65,9 @@ const EmailItem = ({
     e.stopPropagation();
     if (!email.seen) email.seen = true;
     try {
-      await markAsRead(folderName, email.uid);
+      await markAsRead(folderName, email.messageId);
       showNotification("success", "Email marked as read", 4000, "bottom-left");
+      console.log("Email marked as read");
     } catch (err) {
       console.error("Failed to mark as read:", err);
       email.seen = false;
@@ -77,7 +78,8 @@ const EmailItem = ({
   const handleMove = async (e, targetFolder) => {
     e.stopPropagation();
     try {
-      await moveEmail(folderName, [email.uid], targetFolder);
+      // ✅ pindah pakai messageId
+      await moveEmail(folderName, [email.messageId], targetFolder);
       showNotification(
         "success",
         `Email moved to ${targetFolder}`,
@@ -246,7 +248,7 @@ const EmailItem = ({
       <input
         type="checkbox"
         checked={isSelected}
-        onChange={() => onToggleSelect(email.uid)}
+        onChange={() => onToggleSelect({ messageId: email.messageId })}
         className="hidden md:block w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
         onClick={(e) => e.stopPropagation()}
       />
@@ -265,7 +267,7 @@ const EmailItem = ({
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={() => onToggleSelect(email.uid)}
+          onChange={() => onToggleSelect({ messageId: email.messageId })}
           className="block md:hidden w-4 h-4 mt-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           onClick={(e) => e.stopPropagation()}
           title="Select"

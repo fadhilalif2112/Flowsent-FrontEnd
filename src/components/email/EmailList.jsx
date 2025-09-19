@@ -38,17 +38,21 @@ const EmailList = ({ emails, folderName }) => {
     if (selectAll) {
       setSelectedEmails([]);
     } else {
-      const allIds = emails.map((email) => email.uid);
-      setSelectedEmails(allIds);
+      const allEmails = emails.map((email) => ({ messageId: email.messageId }));
+      setSelectedEmails(allEmails);
     }
     setSelectAll(!selectAll);
   };
 
-  const toggleEmailSelection = (emailId) => {
+  const toggleEmailSelection = (email) => {
     setSelectedEmails((prev) => {
-      const newSelection = prev.includes(emailId)
-        ? prev.filter((id) => id !== emailId)
-        : [...prev, emailId];
+      const exists = prev.find((e) => e.messageId === email.messageId);
+      let newSelection;
+      if (exists) {
+        newSelection = prev.filter((e) => e.messageId !== email.messageId);
+      } else {
+        newSelection = [...prev, { messageId: email.messageId }];
+      }
 
       setSelectAll(newSelection.length === emails.length);
       return newSelection;
@@ -60,15 +64,14 @@ const EmailList = ({ emails, folderName }) => {
     const prevState = [...emails];
     try {
       emails.forEach((email) => {
-        if (selectedEmails.includes(email.uid)) {
+        if (selectedEmails.some((sel) => sel.messageId === email.messageId)) {
           email.seen = true;
         }
       });
 
-      for (const emailId of selectedEmails) {
-        await markAsRead(folderName, emailId);
+      for (const sel of selectedEmails) {
+        await markAsRead(folderName, sel.messageId);
       }
-
       showNotification(
         "success",
         "Selected emails marked as read",
@@ -99,13 +102,16 @@ const EmailList = ({ emails, folderName }) => {
   // ✅ Move emails
   const handleMove = async (targetFolder) => {
     try {
-      await moveEmail(folderName, selectedEmails, targetFolder);
+      const messageIds = selectedEmails.map((sel) => sel.messageId);
+      await moveEmail(folderName, messageIds, targetFolder);
+
       showNotification(
         "success",
         `Moved to ${targetFolder}`,
         4000,
         "bottom-left"
       );
+
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
@@ -277,11 +283,14 @@ const EmailList = ({ emails, folderName }) => {
             </div>
           </div>
         ) : (
+          // RENDER EMAIL
           emails.map((email) => (
             <EmailItem
               key={email.messageId}
               email={email}
-              isSelected={selectedEmails.includes(email.uid)}
+              isSelected={selectedEmails.some(
+                (sel) => sel.messageId === email.messageId
+              )}
               onToggleSelect={toggleEmailSelection}
               folderName={folderName}
               onOpenDraft={handleOpenDraft}
