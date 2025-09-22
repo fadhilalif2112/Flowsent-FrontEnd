@@ -9,7 +9,7 @@ const StarredPage = () => {
   const allFolders = Object.values(allEmails).flat();
   const starredEmails = allFolders.filter((email) => email.flagged);
 
-  return <EmailLayout customEmails={starredEmails} />;
+  return <EmailLayout customEmails={starredEmails} folderName="starred" />;
 };
 
 export default StarredPage;

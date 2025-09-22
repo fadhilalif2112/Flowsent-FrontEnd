@@ -232,7 +232,7 @@ export const moveEmailApi = async (folder, messageIds, targetFolder) => {
     headers: getAuthHeaders(),
     body: JSON.stringify({
       folder: folder,
-      message_ids: messageIds, // ✅ ganti email_ids -> message_ids
+      message_ids: messageIds,
       target_folder: targetFolder,
     }),
   });
@@ -255,7 +255,7 @@ export const deletePermanentAllApi = async () => {
   }
 
   const response = await fetch(`${API_BASE_URL}/emails/delete-permanent-all`, {
-    method: "DELETE", // ganti POST kalau route kamu pakai POST
+    method: "DELETE",
     headers: getAuthHeaders(),
   });
 
@@ -347,4 +347,29 @@ export const previewAttachmentApi = async (uid, filename) => {
     filename,
     fallbackDownload: false,
   };
+};
+
+// DELETE PERMANENT SELECTED
+export const deletePermanentApi = async (messageIds) => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/emails/deletePermanent`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      messageIds: messageIds,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to permanently delete emails");
+  }
+
+  return data;
 };

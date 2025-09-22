@@ -20,6 +20,7 @@ const EmailItem = ({
   onToggleSelect,
   folderName,
   onOpenDraft,
+  mapFolderName,
 }) => {
   const [isStarred, setIsStarred] = useState(email.flagged);
   const [isHovered, setIsHovered] = useState(false);
@@ -49,11 +50,16 @@ const EmailItem = ({
     const prevStarred = isStarred;
     setIsStarred(!isStarred);
     try {
+      const folder =
+        folderName === "starred"
+          ? mapFolderName(email.folder)
+          : mapFolderName(folderName);
+
       if (prevStarred) {
-        await markAsUnflagged(folderName, email.messageId);
+        await markAsUnflagged(folder, email.messageId);
         showNotification("success", "Email unstarred", 4000, "top-center");
       } else {
-        await markAsFlagged(folderName, email.messageId);
+        await markAsFlagged(folder, email.messageId);
         showNotification("success", "Email starred", 4000, "top-center");
       }
     } catch (err) {
@@ -67,9 +73,13 @@ const EmailItem = ({
     e.stopPropagation();
     if (!email.seen) email.seen = true;
     try {
-      await markAsRead(folderName, email.messageId);
+      const folder =
+        folderName === "starred"
+          ? mapFolderName(email.folder)
+          : mapFolderName(folderName);
+
+      await markAsRead(folder, email.messageId);
       showNotification("success", "Email marked as read", 4000, "bottom-left");
-      console.log("Email marked as read");
     } catch (err) {
       console.error("Failed to mark as read:", err);
       email.seen = false;
@@ -184,57 +194,70 @@ const EmailItem = ({
   const isTrash = folderName === "deleted";
   const isSent = folderName === "sent";
   const isDraft = folderName === "draft";
+  const isStarredpage = folderName === "starred";
 
   // Komponen tombol yang bisa dipakai ulang
-  const renderActions = (isMobile = false) => (
-    <>
-      {!isArchive && (
+  const renderActions = (isMobile = false) => {
+    if (isStarred) {
+      return (
         <button
-          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
-          title="Archive"
-          onClick={(e) => handleMove(e, "archive")}
+          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+          title="Mark as read"
+          onClick={handleMarkAsRead}
         >
-          <Archive className="w-4 h-4" />
+          <Mail className="w-4 h-4" />
         </button>
-      )}
-      {!isJunk && (
-        <button
-          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-          title="Spam"
-          onClick={(e) => handleMove(e, "junk")}
-        >
-          <CircleAlert className="w-4 h-4" />
-        </button>
-      )}
-      {!isTrash && (
-        <button
-          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-          title="Delete"
-          onClick={(e) => handleMove(e, "deleted")}
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      )}
-      {/* Move to Inbox hanya tampil jika bukan inbox, sent, atau draft */}
-      {!isInbox && !isSent && !isDraft && (
-        <button
-          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
-          title="Move to Inbox"
-          onClick={(e) => handleMove(e, "inbox")}
-        >
-          <Inbox className="w-4 h-4" />
-        </button>
-      )}
-      <button
-        className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
-        title="Mark as read"
-        onClick={handleMarkAsRead}
-      >
-        <Mail className="w-4 h-4" />
-      </button>
-    </>
-  );
+      );
+    }
 
+    return (
+      <>
+        {!isArchive && (
+          <button
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
+            title="Archive"
+            onClick={(e) => handleMove(e, "archive")}
+          >
+            <Archive className="w-4 h-4" />
+          </button>
+        )}
+        {!isJunk && (
+          <button
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+            title="Spam"
+            onClick={(e) => handleMove(e, "junk")}
+          >
+            <CircleAlert className="w-4 h-4" />
+          </button>
+        )}
+        {!isTrash && (
+          <button
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+            title="Delete"
+            onClick={(e) => handleMove(e, "deleted")}
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+        {!isInbox && !isSent && !isDraft && (
+          <button
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
+            title="Move to Inbox"
+            onClick={(e) => handleMove(e, "inbox")}
+          >
+            <Inbox className="w-4 h-4" />
+          </button>
+        )}
+        <button
+          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+          title="Mark as read"
+          onClick={handleMarkAsRead}
+        >
+          <Mail className="w-4 h-4" />
+        </button>
+      </>
+    );
+  };
   return (
     <div
       className={`

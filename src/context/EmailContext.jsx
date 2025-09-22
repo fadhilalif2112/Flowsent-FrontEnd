@@ -1,4 +1,3 @@
-// src/context/EmailContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,6 +9,7 @@ import {
   markAsUnflaggedApi,
   deletePermanentAllApi,
   moveEmailApi,
+  deletePermanentApi,
 } from "../services/api.js";
 import Notification from "../components/ui/Notification.jsx";
 import PreviewModal from "../components/ui/PreviewModal.jsx";
@@ -210,10 +210,49 @@ export const EmailProvider = ({ children }) => {
     }
   };
 
+  // Delete permanent selected
+  const deletePermanent = async (messageIds) => {
+    try {
+      const ids = Array.isArray(messageIds) ? messageIds : [messageIds];
+
+      await deletePermanentApi(ids);
+
+      setEmails((prev) => {
+        const updated = { ...prev };
+        if (updated["deleted"]) {
+          updated["deleted"] = updated["deleted"].filter(
+            (email) => !ids.includes(email.messageId)
+          );
+        }
+        return updated;
+      });
+
+      showNotification(
+        "success",
+        "Email(s) deleted permanently",
+        4000,
+        "bottom-left"
+      );
+    } catch (err) {
+      console.error("Error deleting permanent:", err);
+      await refreshEmails(); // rollback kalau gagal
+      showNotification(
+        "error",
+        "Failed to delete emails permanently",
+        4000,
+        "bottom-left"
+      );
+      throw err;
+    }
+  };
+
   // move email by messageId
   const moveEmail = async (folder, messageIds, targetFolder) => {
     try {
       const ids = Array.isArray(messageIds) ? messageIds : [messageIds];
+
+      // Panggil API backend
+      await moveEmailApi(folder, ids, targetFolder);
 
       // Optimistic UI: update state langsung
       setEmails((prev) => {
@@ -240,9 +279,6 @@ export const EmailProvider = ({ children }) => {
 
         return updated;
       });
-
-      // Panggil API backend
-      await moveEmailApi(folder, ids, targetFolder);
     } catch (err) {
       console.error("Error moving email by messageId:", err);
       await refreshEmails(); // rollback kalau gagal
@@ -267,6 +303,7 @@ export const EmailProvider = ({ children }) => {
         deletePermanentAll,
         showNotification,
         moveEmail,
+        deletePermanent,
       }}
     >
       {children}

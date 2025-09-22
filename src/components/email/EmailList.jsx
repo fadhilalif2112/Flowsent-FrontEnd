@@ -13,21 +13,45 @@ import ComposeModal from "../compose/ComposeModal";
 import { useEmails } from "../../context/EmailContext";
 
 const EmailList = ({ emails, folderName }) => {
-  const { refreshEmails, markAsRead, moveEmail, showNotification } =
-    useEmails();
+  const {
+    refreshEmails,
+    markAsRead,
+    moveEmail,
+    showNotification,
+    deletePermanent,
+  } = useEmails();
 
   const [selectedEmails, setSelectedEmails] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [draftData, setDraftData] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  // 🔑 kondisi folder
+  // kondisi folder
   const isInbox = folderName === "inbox";
   const isArchive = folderName === "archive";
   const isJunk = folderName === "junk";
   const isTrash = folderName === "deleted";
   const isSent = folderName === "sent";
   const isDraft = folderName === "draft";
+  const isStarred = folderName === "starred";
+
+  const mapFolderName = (folder) => {
+    if (!folder) return "inbox";
+
+    const normalized = folder.toLowerCase();
+
+    const folderMap = {
+      inbox: "inbox",
+      "sent items": "sent",
+      drafts: "draft",
+      "deleted items": "deleted",
+      "junk mail": "junk",
+      archive: "archive",
+    };
+
+    return folderMap[normalized] || "inbox";
+  };
 
   const handleOpenDraft = (email) => {
     setDraftData(email);
@@ -59,7 +83,7 @@ const EmailList = ({ emails, folderName }) => {
     });
   };
 
-  // ✅ Optimistic Mark as Read
+  // Optimistic Mark as Read
   const handleMarkAsRead = async () => {
     const prevState = [...emails];
     try {
@@ -70,8 +94,17 @@ const EmailList = ({ emails, folderName }) => {
       });
 
       for (const sel of selectedEmails) {
-        await markAsRead(folderName, sel.messageId);
+        const email = emails.find((e) => e.messageId === sel.messageId);
+        if (!email) continue;
+
+        const folder =
+          folderName === "starred"
+            ? mapFolderName(email.folder) // pakai folder asli email
+            : mapFolderName(folderName);
+
+        await markAsRead(folder, sel.messageId);
       }
+
       showNotification(
         "success",
         "Selected emails marked as read",
@@ -125,12 +158,20 @@ const EmailList = ({ emails, folderName }) => {
     }
   };
 
-  const handleDeletePermanent = () => {
-    console.log("Permanent delete triggered for:", selectedEmails);
-    showNotification("info", "Permanent delete clicked", 4000, "bottom-left");
-    // TODO: API permanent delete
-    setSelectedEmails([]);
-    setSelectAll(false);
+  const handleDeletePermanent = async () => {
+    try {
+      setDeleting(true);
+      const messageIds = selectedEmails.map((sel) => sel.messageId);
+
+      await deletePermanent(messageIds);
+
+      setSelectedEmails([]);
+      setSelectAll(false);
+    } catch (err) {
+      console.error("Failed to permanently delete:", err);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleComposeClick = () => setIsComposeOpen(true);
@@ -157,7 +198,30 @@ const EmailList = ({ emails, folderName }) => {
                     onClick={handleDeletePermanent}
                     className="ml-2 text-sm font-medium text-red-600 hover:text-red-800 hover:underline"
                   >
-                    Delete Forever
+                    {deleting ? (
+                      <svg
+                        className="animate-spin w-3 h-3 text-red-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      "Delete Forever"
+                    )}
                   </button>
                 )}
               </>
@@ -191,7 +255,7 @@ const EmailList = ({ emails, folderName }) => {
             </button>
 
             {/* Move to Archive */}
-            {!isArchive && (
+            {!isArchive && !isStarred && (
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
                 title="Archive"
@@ -203,7 +267,7 @@ const EmailList = ({ emails, folderName }) => {
             )}
 
             {/* Move to Spam */}
-            {!isJunk && (
+            {!isJunk && !isStarred && (
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
                 title="Spam"
@@ -214,8 +278,8 @@ const EmailList = ({ emails, folderName }) => {
               </button>
             )}
 
-            {/* Move to Trash  */}
-            {!isTrash && (
+            {/* Move to Trash */}
+            {!isTrash && !isStarred && (
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
                 title="Move to Trash"
@@ -227,7 +291,7 @@ const EmailList = ({ emails, folderName }) => {
             )}
 
             {/* Move to Inbox */}
-            {!isInbox && !isSent && !isDraft && (
+            {!isInbox && !isSent && !isDraft && !isStarred && (
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
                 title="Move to Inbox"
@@ -237,7 +301,6 @@ const EmailList = ({ emails, folderName }) => {
                 <Inbox className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             )}
-
             {/* Mark as Read */}
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
@@ -294,6 +357,7 @@ const EmailList = ({ emails, folderName }) => {
               onToggleSelect={toggleEmailSelection}
               folderName={folderName}
               onOpenDraft={handleOpenDraft}
+              mapFolderName={mapFolderName}
             />
           ))
         )}
