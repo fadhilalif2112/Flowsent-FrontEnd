@@ -10,6 +10,7 @@ import {
   Download,
   CircleAlert,
   Inbox,
+  Eye,
 } from "lucide-react";
 import { useEmails } from "../../context/EmailContext";
 
@@ -27,6 +28,7 @@ const EmailItem = ({
 
   const {
     downloadAttachment,
+    previewAttachment,
     markAsFlagged,
     markAsUnflagged,
     markAsRead,
@@ -78,7 +80,7 @@ const EmailItem = ({
   const handleMove = async (e, targetFolder) => {
     e.stopPropagation();
     try {
-      // ✅ pindah pakai messageId
+      // pindah pakai messageId
       await moveEmail(folderName, [email.messageId], targetFolder);
       showNotification(
         "success",
@@ -121,11 +123,10 @@ const EmailItem = ({
     }
   };
 
-  const handleDeletePermanent = (e) => {
+  // preview attachment
+  const handlePreview = (e, attachment) => {
     e.stopPropagation();
-    console.log("Delete permanently from Trash:", email.uid);
-    // TODO: tambahkan API delete permanent nanti
-    showNotification("info", "Permanent delete clicked", 4000, "bottom-left");
+    previewAttachment(email.uid, attachment.filename);
   };
 
   const formatTime = (timestamp) => {
@@ -387,6 +388,13 @@ const EmailItem = ({
                     ({Math.round(attachment.size / 1024)}KB)
                   </span>
                 )}
+                <button
+                  onClick={(e) => handlePreview(e, attachment)}
+                  className="p-1 rounded hover:bg-blue-200"
+                  title="Preview"
+                >
+                  <Eye className="w-3 h-3" />
+                </button>
                 <button
                   onClick={(e) => handleDownload(e, attachment)}
                   disabled={downloading[attachment.filename]}

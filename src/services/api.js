@@ -304,3 +304,47 @@ export const saveDraftApi = async ({ to, subject, body, attachments }) => {
 
   return data;
 };
+
+// Preview Attachment API
+export const previewAttachmentApi = async (uid, filename) => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  // cek ekstensi file
+  const ext = filename.split(".").pop().toLowerCase();
+  const previewable = ["jpg", "jpeg", "png", "gif", "webp", "pdf", "txt"];
+
+  // kalau bukan previewable → langsung download
+  if (!previewable.includes(ext)) {
+    return { fallbackDownload: true };
+  }
+
+  const res = await fetch(
+    `${API_BASE_URL}/emails/attachments/${uid}/preview/${encodeURIComponent(
+      filename
+    )}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to preview attachment");
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+
+  return {
+    url,
+    mimeType: blob.type,
+    filename,
+    fallbackDownload: false,
+  };
+};

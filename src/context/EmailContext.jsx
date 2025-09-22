@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   fetchEmailsApi,
   downloadAttachmentApi,
+  previewAttachmentApi,
   markAsReadApi,
   markAsFlaggedApi,
   markAsUnflaggedApi,
@@ -11,6 +12,7 @@ import {
   moveEmailApi,
 } from "../services/api.js";
 import Notification from "../components/ui/Notification.jsx";
+import PreviewModal from "../components/ui/PreviewModal.jsx";
 
 const EmailContext = createContext();
 
@@ -19,6 +21,10 @@ export const EmailProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewType, setPreviewType] = useState(null);
+  const [previewFilename, setPreviewFilename] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -73,6 +79,25 @@ export const EmailProvider = ({ children }) => {
     } catch (err) {
       console.error("Error downloading attachment:", err);
       setError(err.message);
+    }
+  };
+
+  // preview attachment
+  const previewAttachment = async (uid, filename) => {
+    try {
+      const result = await previewAttachmentApi(uid, filename);
+
+      if (result.fallbackDownload) {
+        await downloadAttachmentApi(uid, filename);
+        return;
+      }
+
+      setPreviewUrl(result.url);
+      setPreviewType(result.mimeType);
+      setPreviewFilename(result.filename);
+    } catch (err) {
+      console.error("Error previewing attachment:", err);
+      showNotification("error", "Gagal preview attachment");
     }
   };
 
@@ -235,6 +260,7 @@ export const EmailProvider = ({ children }) => {
         setSearchQuery,
         refreshEmails,
         downloadAttachment,
+        previewAttachment,
         markAsRead,
         markAsFlagged,
         markAsUnflagged,
@@ -250,6 +276,18 @@ export const EmailProvider = ({ children }) => {
         show={notification.show}
         duration={notification.duration}
         onClose={hideNotification}
+      />
+
+      {/* Modal preview attachment */}
+      <PreviewModal
+        url={previewUrl}
+        type={previewType}
+        filename={previewFilename}
+        onClose={() => {
+          setPreviewUrl(null);
+          setPreviewType(null);
+          setPreviewFilename(null);
+        }}
       />
     </EmailContext.Provider>
   );

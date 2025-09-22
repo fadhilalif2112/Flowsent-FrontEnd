@@ -11,6 +11,7 @@ import {
   Video,
   Music,
   Archive,
+  Eye,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEmails } from "../../context/EmailContext";
@@ -25,6 +26,7 @@ const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
     markAsUnflagged,
     moveEmail,
     showNotification,
+    previewAttachment,
   } = useEmails();
 
   // Get the previous folder from state or default to inbox
@@ -32,6 +34,12 @@ const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
 
   const handleBack = () => {
     navigate(`/${previousFolder}`);
+  };
+
+  // preview attachment
+  const handlePreview = (e, attachment) => {
+    e.stopPropagation();
+    previewAttachment(email.uid, attachment.filename);
   };
 
   // Handler Star
@@ -314,6 +322,13 @@ const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
                       {formatFileSize(attachment.size)}
                     </div>
                   </div>
+                  <button
+                    onClick={(e) => handlePreview(e, attachment)}
+                    className="p-1 rounded hover:bg-blue-200"
+                    title="Preview"
+                  >
+                    <Eye className="w-3 h-3" />
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
