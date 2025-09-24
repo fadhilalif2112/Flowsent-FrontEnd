@@ -14,36 +14,70 @@ const EmailDetailPage = () => {
 
   const [composeDraft, setComposeDraft] = useState(null);
 
+  // helper untuk format tanggal
+  const formatEmailDate = (timestamp) => {
+    return new Date(timestamp).toLocaleString("en-US", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // helper untuk ambil isi body email
+  const getOriginalBody = (email) => {
+    return email.body?.html
+      ? email.body.html
+      : `<p>${(email.body?.text || "").replace(/\n/g, "<br/>")}</p>`;
+  };
+
   const handleReply = (email) => {
+    const formattedDate = formatEmailDate(email.timestamp);
+    const originalBody = getOriginalBody(email);
+
     setComposeDraft({
       recipients: [{ email: email.senderEmail }],
       subject: email.subject.startsWith("Re:")
         ? email.subject
         : "Re: " + email.subject,
       body: {
-        html: `<br/><br/>On ${email.timestamp}, ${
-          email.sender
-        } wrote:<blockquote>${
-          email.body?.html || email.body?.text || ""
-        }</blockquote>`,
+        html: `
+        <br/><br/>
+        <div style="margin:1em 0; padding-left:1em; border-left:2px solid #ccc; color:#555; font-size:0.9em;">
+          On ${formattedDate}, <b>${email.sender}</b> &lt;${email.senderEmail}&gt; wrote:
+          <blockquote style="margin:0; padding-left:1em; border-left:2px solid #ddd;">
+            ${originalBody}
+          </blockquote>
+        </div>
+      `,
       },
     });
     setIsComposeOpen(true);
   };
 
   const handleForward = (email) => {
+    const formattedDate = formatEmailDate(email.timestamp);
+    const originalBody = getOriginalBody(email);
+
     setComposeDraft({
       recipients: [],
       subject: email.subject.startsWith("Fwd:")
         ? email.subject
         : "Fwd: " + email.subject,
       body: {
-        html: `<br/><br/>---------- Forwarded message ----------<br/>
-               From: ${email.sender} &lt;${email.senderEmail}&gt;<br/>
-               Date: ${email.timestamp}<br/>
-               Subject: ${email.subject}<br/><br/>${
-          email.body?.html || email.body?.text || ""
-        }`,
+        html: `
+        <br/><br/>
+        <div style="border-top:1px solid #ccc; padding-top:10px; font-size:0.9em; color:#555;">
+          ---------- Forwarded message ----------<br/>
+          <b>From:</b> ${email.sender} &lt;${email.senderEmail}&gt;<br/>
+          <b>Date:</b> ${formattedDate}<br/>
+          <b>Subject:</b> ${email.subject}<br/>
+        </div>
+        <br/>
+        ${originalBody}
+      `,
       },
       rawAttachments: email.rawAttachments || [],
     });

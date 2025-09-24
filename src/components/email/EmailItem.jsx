@@ -13,6 +13,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useEmails } from "../../context/EmailContext";
+import LoadingIcon from "../ui/LoadingIcon";
 
 const EmailItem = ({
   email,
@@ -25,7 +26,10 @@ const EmailItem = ({
   const [isStarred, setIsStarred] = useState(email.flagged);
   const [isHovered, setIsHovered] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(null);
   const [downloading, setDownloading] = useState({});
+  const [previewing, setPreviewing] = useState({});
+  const [starring, setStarring] = useState(false);
 
   const {
     downloadAttachment,
@@ -49,6 +53,7 @@ const EmailItem = ({
     e.stopPropagation();
     const prevStarred = isStarred;
     setIsStarred(!isStarred);
+    setStarring(true);
     try {
       const folder =
         folderName === "starred"
@@ -66,11 +71,14 @@ const EmailItem = ({
       console.error("Failed to toggle star:", err);
       setIsStarred(prevStarred);
       showNotification("error", "Failed to toggle star", 4000, "top-center");
+    } finally {
+      setStarring(false);
     }
   };
 
   const handleMarkAsRead = async (e) => {
     e.stopPropagation();
+    setLoadingAction("markasread");
     if (!email.seen) email.seen = true;
     try {
       const folder =
@@ -84,13 +92,15 @@ const EmailItem = ({
       console.error("Failed to mark as read:", err);
       email.seen = false;
       showNotification("error", "Failed to mark as read", 4000, "bottom-left");
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const handleMove = async (e, targetFolder) => {
     e.stopPropagation();
+    setLoadingAction(targetFolder);
     try {
-      // pindah pakai messageId
       await moveEmail(folderName, [email.messageId], targetFolder);
       showNotification(
         "success",
@@ -106,6 +116,8 @@ const EmailItem = ({
         4000,
         "bottom-left"
       );
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -134,9 +146,22 @@ const EmailItem = ({
   };
 
   // preview attachment
-  const handlePreview = (e, attachment) => {
+  const handlePreview = async (e, attachment) => {
     e.stopPropagation();
-    previewAttachment(email.uid, attachment.filename);
+    setPreviewing((prev) => ({ ...prev, [attachment.filename]: true }));
+    try {
+      await previewAttachment(email.uid, attachment.filename);
+    } catch (err) {
+      console.error(`Failed to preview ${attachment.filename}:`, err);
+      showNotification(
+        "error",
+        `Failed to preview ${attachment.filename}`,
+        4000,
+        "top-center"
+      );
+    } finally {
+      setPreviewing((prev) => ({ ...prev, [attachment.filename]: false }));
+    }
   };
 
   const formatTime = (timestamp) => {
@@ -198,14 +223,19 @@ const EmailItem = ({
 
   // Komponen tombol yang bisa dipakai ulang
   const renderActions = (isMobile = false) => {
-    if (isStarred) {
+    if (isStarredpage) {
       return (
         <button
           className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
           title="Mark as read"
           onClick={handleMarkAsRead}
+          disabled={loadingAction === "markasread"}
         >
-          <Mail className="w-4 h-4" />
+          {loadingAction === "markasread" ? (
+            <LoadingIcon size="w-4 h-4" color="text-green-400" />
+          ) : (
+            <Mail className="w-4 h-4" />
+          )}
         </button>
       );
     }
@@ -217,8 +247,13 @@ const EmailItem = ({
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
             title="Archive"
             onClick={(e) => handleMove(e, "archive")}
+            disabled={loadingAction === "archive"}
           >
-            <Archive className="w-4 h-4" />
+            {loadingAction === "archive" ? (
+              <LoadingIcon size="w-4 h-4" color="text-amber-800" />
+            ) : (
+              <Archive className="w-4 h-4" />
+            )}
           </button>
         )}
         {!isJunk && (
@@ -226,8 +261,13 @@ const EmailItem = ({
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
             title="Spam"
             onClick={(e) => handleMove(e, "junk")}
+            disabled={loadingAction === "junk"}
           >
-            <CircleAlert className="w-4 h-4" />
+            {loadingAction === "junk" ? (
+              <LoadingIcon size="w-4 h-4" color="text-red-600" />
+            ) : (
+              <CircleAlert className="w-4 h-4" />
+            )}
           </button>
         )}
         {!isTrash && (
@@ -235,8 +275,13 @@ const EmailItem = ({
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
             title="Delete"
             onClick={(e) => handleMove(e, "deleted")}
+            disabled={loadingAction === "deleted"}
           >
-            <Trash2 className="w-4 h-4" />
+            {loadingAction === "deleted" ? (
+              <LoadingIcon size="w-4 h-4" color="text-red-600" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
           </button>
         )}
         {!isInbox && !isSent && !isDraft && (
@@ -244,20 +289,31 @@ const EmailItem = ({
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
             title="Move to Inbox"
             onClick={(e) => handleMove(e, "inbox")}
+            disabled={loadingAction === "inbox"}
           >
-            <Inbox className="w-4 h-4" />
+            {loadingAction === "inbox" ? (
+              <LoadingIcon size="w-4 h-4" color="text-blue-600" />
+            ) : (
+              <Inbox className="w-4 h-4" />
+            )}
           </button>
         )}
         <button
           className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
           title="Mark as read"
           onClick={handleMarkAsRead}
+          disabled={loadingAction === "markasread"}
         >
-          <Mail className="w-4 h-4" />
+          {loadingAction === "markasread" ? (
+            <LoadingIcon size="w-4 h-4" color="text-green-400" />
+          ) : (
+            <Mail className="w-4 h-4" />
+          )}
         </button>
       </>
     );
   };
+
   return (
     <div
       className={`
@@ -280,9 +336,16 @@ const EmailItem = ({
       <div className="flex flex-col items-center space-y-1">
         <button
           onClick={handleStarToggle}
-          className="text-gray-300 hover:text-yellow-500 transition-colors group-hover:text-gray-400 flex-shrink-0 mt-1 md:mt-0"
+          disabled={starring}
+          className={`flex-shrink-0 mt-1 md:mt-0 transition-colors group-hover:text-gray-400 ${
+            starring
+              ? "text-gray-400 cursor-not-allowed"
+              : "text-gray-300 hover:text-yellow-500"
+          }`}
         >
-          {isStarred ? (
+          {starring ? (
+            <LoadingIcon size="w-4 h-4 md:w-5 md:h-5" color="text-yellow-500" />
+          ) : isStarred ? (
             <Star className="w-4 h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
           ) : (
             <Star className="w-4 h-4 md:w-5 md:h-5" />
@@ -413,11 +476,21 @@ const EmailItem = ({
                 )}
                 <button
                   onClick={(e) => handlePreview(e, attachment)}
-                  className="p-1 rounded hover:bg-blue-200"
+                  disabled={previewing[attachment.filename]}
+                  className={`p-1 rounded transition-colors ${
+                    previewing[attachment.filename]
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "hover:bg-blue-200"
+                  }`}
                   title="Preview"
                 >
-                  <Eye className="w-3 h-3" />
+                  {previewing[attachment.filename] ? (
+                    <LoadingIcon size="w-3 h-3" color="text-blue-500" />
+                  ) : (
+                    <Eye className="w-3 h-3" />
+                  )}
                 </button>
+
                 <button
                   onClick={(e) => handleDownload(e, attachment)}
                   disabled={downloading[attachment.filename]}
@@ -429,26 +502,7 @@ const EmailItem = ({
                   title="Download"
                 >
                   {downloading[attachment.filename] ? (
-                    <svg
-                      className="animate-spin w-3 h-3 text-blue-500"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8z"
-                      ></path>
-                    </svg>
+                    <LoadingIcon size="w-3 h-3" color="text-blue-500" />
                   ) : (
                     <Download className="w-3 h-3" />
                   )}

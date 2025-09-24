@@ -1,10 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ArrowLeft,
   Reply,
   Forward,
-  Trash2,
-  Star,
   Download,
   FileText,
   Image,
@@ -15,19 +13,15 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEmails } from "../../context/EmailContext";
+import LoadingIcon from "../ui/LoadingIcon";
 
 const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [attachmentLoading, setAttachmentLoading] = useState({});
 
-  const {
-    downloadAttachment,
-    markAsFlagged,
-    markAsUnflagged,
-    moveEmail,
-    showNotification,
-    previewAttachment,
-  } = useEmails();
+  const { downloadAttachment, showNotification, previewAttachment } =
+    useEmails();
 
   // Get the previous folder from state or default to inbox
   const previousFolder = location.state?.from || "inbox";
@@ -37,38 +31,52 @@ const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
   };
 
   // preview attachment
-  const handlePreview = (e, attachment) => {
+  const handlePreview = async (e, attachment) => {
     e.stopPropagation();
-    previewAttachment(email.uid, attachment.filename);
-  };
-
-  // Handler Star
-  const handleStarToggle = async () => {
+    setAttachmentLoading((prev) => ({
+      ...prev,
+      [attachment.filename]: "preview",
+    }));
     try {
-      if (email.flagged) {
-        await markAsUnflagged(previousFolder, email.uid);
-        email.flagged = false;
-        showNotification("success", "Email unstarred", 4000, "top-center");
-      } else {
-        await markAsFlagged(previousFolder, email.uid);
-        email.flagged = true;
-        showNotification("success", "Email starred", 4000, "top-center");
-      }
+      await previewAttachment(email.uid, attachment.filename);
     } catch (err) {
-      console.error("Failed to toggle star:", err);
-      showNotification("error", "Failed to toggle star", 4000, "top-center");
+      console.error("Preview failed:", err);
+      showNotification(
+        "error",
+        "Failed to preview attachment",
+        4000,
+        "top-center"
+      );
+    } finally {
+      setAttachmentLoading((prev) => ({
+        ...prev,
+        [attachment.filename]: null,
+      }));
     }
   };
 
-  // Handler Move to Trash
-  const handleMoveToTrash = async () => {
+  // download attachment
+  const handleDownload = async (e, attachment) => {
+    e.stopPropagation();
+    setAttachmentLoading((prev) => ({
+      ...prev,
+      [attachment.filename]: "download",
+    }));
     try {
-      await moveEmail(previousFolder, [email.uid], "deleted");
-      showNotification("success", "Email moved to Trash", 4000, "bottom-left");
-      navigate(`/${previousFolder}`); // balik ke folder asal
+      await downloadAttachment(email.uid, attachment.filename);
     } catch (err) {
-      console.error("Failed to move email to Trash:", err);
-      showNotification("error", "Failed to move to Trash", 4000, "bottom-left");
+      console.error("Download failed:", err);
+      showNotification(
+        "error",
+        "Failed to download attachment",
+        4000,
+        "top-center"
+      );
+    } finally {
+      setAttachmentLoading((prev) => ({
+        ...prev,
+        [attachment.filename]: null,
+      }));
     }
   };
 
@@ -207,30 +215,6 @@ const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
             >
               <Forward className="w-5 h-5" />
             </button>
-
-            {/* handler star */}
-            <button
-              onClick={handleStarToggle}
-              className={`p-2 rounded-lg transition-colors ${
-                email.flagged
-                  ? "text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50"
-                  : "text-gray-400 hover:text-yellow-500 hover:bg-yellow-50"
-              }`}
-              title={email.flagged ? "Unstar" : "Star"}
-            >
-              <Star
-                className={`w-5 h-5 ${email.flagged ? "fill-current" : ""}`}
-              />
-            </button>
-
-            {/* handler move to trash */}
-            <button
-              onClick={handleMoveToTrash}
-              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="Delete"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </div>
@@ -306,41 +290,55 @@ const EmailDetail = ({ email, loading = false, onReply, onForward }) => {
               Attachments ({email.rawAttachments.length})
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {email.rawAttachments.map((attachment, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
-                >
-                  <div className="flex-shrink-0 text-gray-400">
-                    {getFileIcon(attachment.filename)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {attachment.filename}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {formatFileSize(attachment.size)}
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => handlePreview(e, attachment)}
-                    className="p-1 rounded hover:bg-blue-200"
-                    title="Preview"
+              {email.rawAttachments.map((attachment, index) => {
+                const isLoading = attachmentLoading[attachment.filename];
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
                   >
-                    <Eye className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      downloadAttachment(email.uid, attachment.filename);
-                    }}
-                    className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                    title="Download"
-                  >
-                    <Download className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                    <div className="flex-shrink-0 text-gray-400">
+                      {getFileIcon(attachment.filename)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {attachment.filename}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formatFileSize(attachment.size)}
+                      </div>
+                    </div>
+
+                    {/* Preview button */}
+                    <button
+                      onClick={(e) => handlePreview(e, attachment)}
+                      disabled={isLoading === "preview"}
+                      className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                      title="Preview"
+                    >
+                      {isLoading === "preview" ? (
+                        <LoadingIcon size="w-4 h-4" color="text-blue-600" />
+                      ) : (
+                        <Eye className="w-3 h-3" />
+                      )}
+                    </button>
+
+                    {/* Download button */}
+                    <button
+                      onClick={(e) => handleDownload(e, attachment)}
+                      disabled={isLoading === "download"}
+                      className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                      title="Download"
+                    >
+                      {isLoading === "download" ? (
+                        <LoadingIcon size="w-4 h-4" color="text-blue-600" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

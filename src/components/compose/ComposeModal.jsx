@@ -569,9 +569,9 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
         <ConfirmDialog
           message="You have unsaved changes. Are you sure you want to close?"
           onConfirm={() => {
-            setShowConfirm(false); // 1. tutup confirm dulu
-            resetForm(); // 2. reset state form
-            onClose(); // 3. terakhir: close modal lewat parent
+            setShowConfirm(false);
+            resetForm();
+            onClose();
           }}
           onCancel={() => setShowConfirm(false)}
         />

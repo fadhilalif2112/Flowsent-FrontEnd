@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import ComposeModal from "../compose/ComposeModal";
 import { useEmails } from "../../context/EmailContext";
+import LoadingIcon from "../ui/LoadingIcon";
 
 const EmailList = ({ emails, folderName }) => {
   const {
@@ -25,7 +26,7 @@ const EmailList = ({ emails, folderName }) => {
   const [selectAll, setSelectAll] = useState(false);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [draftData, setDraftData] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(null);
 
   // kondisi folder
   const isInbox = folderName === "inbox";
@@ -83,8 +84,22 @@ const EmailList = ({ emails, folderName }) => {
     });
   };
 
+  const handleRefresh = async () => {
+    try {
+      setLoadingAction("refresh");
+      await refreshEmails();
+      showNotification("success", "Emails refreshed", 3000, "top-center");
+    } catch (err) {
+      console.error("Failed to refresh emails:", err);
+      showNotification("error", "Failed to refresh emails", 3000, "top-center");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   // Optimistic Mark as Read
   const handleMarkAsRead = async () => {
+    setLoadingAction("markAsRead");
     const prevState = [...emails];
     try {
       emails.forEach((email) => {
@@ -129,11 +144,14 @@ const EmailList = ({ emails, folderName }) => {
           emails[idx].seen = prevEmail.seen;
         }
       });
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   // ✅ Move emails
   const handleMove = async (targetFolder) => {
+    setLoadingAction(`move:${targetFolder}`);
     try {
       const messageIds = selectedEmails.map((sel) => sel.messageId);
       await moveEmail(folderName, messageIds, targetFolder);
@@ -155,12 +173,14 @@ const EmailList = ({ emails, folderName }) => {
         4000,
         "bottom-left"
       );
+    } finally {
+      setLoadingAction(null);
     }
   };
 
   const handleDeletePermanent = async () => {
+    setLoadingAction("delete");
     try {
-      setDeleting(true);
       const messageIds = selectedEmails.map((sel) => sel.messageId);
 
       await deletePermanent(messageIds);
@@ -170,7 +190,7 @@ const EmailList = ({ emails, folderName }) => {
     } catch (err) {
       console.error("Failed to permanently delete:", err);
     } finally {
-      setDeleting(false);
+      setLoadingAction(null);
     }
   };
 
@@ -197,28 +217,10 @@ const EmailList = ({ emails, folderName }) => {
                   <button
                     onClick={handleDeletePermanent}
                     className="ml-2 text-sm font-medium text-red-600 hover:text-red-800 hover:underline"
+                    disabled={loadingAction === "delete"}
                   >
-                    {deleting ? (
-                      <svg
-                        className="animate-spin w-3 h-3 text-red-600"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8z"
-                        ></path>
-                      </svg>
+                    {loadingAction === "delete" ? (
+                      <LoadingIcon size="w-3 h-3" color="text-red-600" />
                     ) : (
                       "Delete Forever"
                     )}
@@ -230,28 +232,18 @@ const EmailList = ({ emails, folderName }) => {
             {/* Refresh */}
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400"
-              onClick={async () => {
-                try {
-                  await refreshEmails();
-                  showNotification(
-                    "success",
-                    "Emails refreshed",
-                    3000,
-                    "top-center"
-                  );
-                } catch (err) {
-                  console.error("Failed to refresh emails:", err);
-                  showNotification(
-                    "error",
-                    "Failed to refresh emails",
-                    3000,
-                    "top-center"
-                  );
-                }
-              }}
+              onClick={handleRefresh}
               title="Refresh"
+              disabled={loadingAction === "refresh"}
             >
-              <RefreshCcw className="w-4 h-4 md:w-5 md:h-5" />
+              {loadingAction === "refresh" ? (
+                <LoadingIcon
+                  size="w-4 h-4 md:w-5 md:h-5"
+                  color="text-blue-600"
+                />
+              ) : (
+                <RefreshCcw className="w-4 h-4 md:w-5 md:h-5" />
+              )}
             </button>
 
             {/* Move to Archive */}
@@ -259,10 +251,20 @@ const EmailList = ({ emails, folderName }) => {
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
                 title="Archive"
-                disabled={selectedEmails.length === 0}
+                disabled={
+                  selectedEmails.length === 0 ||
+                  loadingAction === "move:archive"
+                }
                 onClick={() => handleMove("archive")}
               >
-                <Archive className="w-4 h-4 md:w-5 md:h-5" />
+                {loadingAction === "move:archive" ? (
+                  <LoadingIcon
+                    size="w-4 h-4 md:w-5 md:h-5"
+                    color="text-amber-800"
+                  />
+                ) : (
+                  <Archive className="w-4 h-4 md:w-5 md:h-5" />
+                )}
               </button>
             )}
 
@@ -271,10 +273,19 @@ const EmailList = ({ emails, folderName }) => {
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
                 title="Spam"
-                disabled={selectedEmails.length === 0}
+                disabled={
+                  selectedEmails.length === 0 || loadingAction === "move:junk"
+                }
                 onClick={() => handleMove("junk")}
               >
-                <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
+                {loadingAction === "move:junk" ? (
+                  <LoadingIcon
+                    size="w-4 h-4 md:w-5 md:h-5"
+                    color="text-red-600"
+                  />
+                ) : (
+                  <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
+                )}
               </button>
             )}
 
@@ -283,10 +294,20 @@ const EmailList = ({ emails, folderName }) => {
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
                 title="Move to Trash"
-                disabled={selectedEmails.length === 0}
+                disabled={
+                  selectedEmails.length === 0 ||
+                  loadingAction === "move:deleted"
+                }
                 onClick={() => handleMove("deleted")}
               >
-                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                {loadingAction === "move:deleted" ? (
+                  <LoadingIcon
+                    size="w-4 h-4 md:w-5 md:h-5"
+                    color="text-red-600"
+                  />
+                ) : (
+                  <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                )}
               </button>
             )}
 
@@ -295,20 +316,39 @@ const EmailList = ({ emails, folderName }) => {
               <button
                 className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
                 title="Move to Inbox"
-                disabled={selectedEmails.length === 0}
+                disabled={
+                  selectedEmails.length === 0 || loadingAction === "move:inbox"
+                }
                 onClick={() => handleMove("inbox")}
               >
-                <Inbox className="w-4 h-4 md:w-5 md:h-5" />
+                {loadingAction === "move:inbox" ? (
+                  <LoadingIcon
+                    size="w-4 h-4 md:w-5 md:h-5"
+                    color="text-blue-600"
+                  />
+                ) : (
+                  <Inbox className="w-4 h-4 md:w-5 md:h-5" />
+                )}
               </button>
             )}
+
             {/* Mark as Read */}
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
               onClick={handleMarkAsRead}
-              disabled={selectedEmails.length === 0}
+              disabled={
+                selectedEmails.length === 0 || loadingAction === "markAsRead"
+              }
               title="Mark as Read"
             >
-              <Mail className="w-4 h-4 md:w-5 md:h-5" />
+              {loadingAction === "markAsRead" ? (
+                <LoadingIcon
+                  size="w-4 h-4 md:w-5 md:h-5"
+                  color="text-green-400"
+                />
+              ) : (
+                <Mail className="w-4 h-4 md:w-5 md:h-5" />
+              )}
             </button>
           </div>
 
