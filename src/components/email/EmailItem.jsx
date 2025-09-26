@@ -223,6 +223,37 @@ const EmailItem = ({
 
   // Komponen tombol yang bisa dipakai ulang
   const renderActions = (isMobile = false) => {
+    if (isDraft) {
+      return (
+        <div>
+          <button
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+            title="Move to Trash"
+            onClick={(e) => handleMove(e, "deleted")}
+            disabled={loadingAction === "deleted"}
+          >
+            {loadingAction === "deleted" ? (
+              <LoadingIcon size="w-4 h-4" color="text-red-600" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+            title="Mark as read"
+            onClick={handleMarkAsRead}
+            disabled={loadingAction === "markasread"}
+          >
+            {loadingAction === "markasread" ? (
+              <LoadingIcon size="w-4 h-4" color="text-green-400" />
+            ) : (
+              <Mail className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      );
+    }
+
     if (isStarredpage) {
       return (
         <button

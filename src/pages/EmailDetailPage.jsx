@@ -13,6 +13,7 @@ const EmailDetailPage = () => {
   const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   const [composeDraft, setComposeDraft] = useState(null);
+  const [composeMode, setComposeMode] = useState("new");
 
   // helper untuk format tanggal
   const formatEmailDate = (timestamp) => {
@@ -55,6 +56,7 @@ const EmailDetailPage = () => {
       },
     });
     setIsComposeOpen(true);
+    setComposeMode("reply");
   };
 
   const handleForward = (email) => {
@@ -82,6 +84,7 @@ const EmailDetailPage = () => {
       rawAttachments: email.rawAttachments || [],
     });
     setIsComposeOpen(true);
+    setComposeMode("forward");
   };
 
   useEffect(() => {
@@ -153,6 +156,7 @@ const EmailDetailPage = () => {
         isOpen={isComposeOpen}
         onClose={() => setIsComposeOpen(false)}
         draft={composeDraft}
+        mode={composeMode}
       />
     </>
   );

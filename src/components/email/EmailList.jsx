@@ -229,7 +229,7 @@ const EmailList = ({ emails, folderName }) => {
               </>
             )}
 
-            {/* Refresh */}
+            {/* Refresh selalu ada */}
             <button
               className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400"
               onClick={handleRefresh}
@@ -246,110 +246,159 @@ const EmailList = ({ emails, folderName }) => {
               )}
             </button>
 
-            {/* Move to Archive */}
-            {!isArchive && !isStarred && (
-              <button
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
-                title="Archive"
-                disabled={
-                  selectedEmails.length === 0 ||
-                  loadingAction === "move:archive"
-                }
-                onClick={() => handleMove("archive")}
-              >
-                {loadingAction === "move:archive" ? (
-                  <LoadingIcon
-                    size="w-4 h-4 md:w-5 md:h-5"
-                    color="text-amber-800"
-                  />
-                ) : (
-                  <Archive className="w-4 h-4 md:w-5 md:h-5" />
-                )}
-              </button>
-            )}
+            {isDraft ? (
+              <>
+                {/* Move to Trash */}
+                <button
+                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                  title="Move to Trash"
+                  disabled={
+                    selectedEmails.length === 0 ||
+                    loadingAction === "move:deleted"
+                  }
+                  onClick={() => handleMove("deleted")}
+                >
+                  {loadingAction === "move:deleted" ? (
+                    <LoadingIcon
+                      size="w-4 h-4 md:w-5 md:h-5"
+                      color="text-red-600"
+                    />
+                  ) : (
+                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                  )}
+                </button>
 
-            {/* Move to Spam */}
-            {!isJunk && !isStarred && (
-              <button
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-                title="Spam"
-                disabled={
-                  selectedEmails.length === 0 || loadingAction === "move:junk"
-                }
-                onClick={() => handleMove("junk")}
-              >
-                {loadingAction === "move:junk" ? (
-                  <LoadingIcon
-                    size="w-4 h-4 md:w-5 md:h-5"
-                    color="text-red-600"
-                  />
-                ) : (
-                  <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
+                {/* Mark as Read */}
+                <button
+                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+                  onClick={handleMarkAsRead}
+                  disabled={
+                    selectedEmails.length === 0 ||
+                    loadingAction === "markAsRead"
+                  }
+                  title="Mark as Read"
+                >
+                  {loadingAction === "markAsRead" ? (
+                    <LoadingIcon
+                      size="w-4 h-4 md:w-5 md:h-5"
+                      color="text-green-400"
+                    />
+                  ) : (
+                    <Mail className="w-4 h-4 md:w-5 md:h-5" />
+                  )}
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Move to Archive */}
+                {!isArchive && !isStarred && (
+                  <button
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
+                    title="Archive"
+                    disabled={
+                      selectedEmails.length === 0 ||
+                      loadingAction === "move:archive"
+                    }
+                    onClick={() => handleMove("archive")}
+                  >
+                    {loadingAction === "move:archive" ? (
+                      <LoadingIcon
+                        size="w-4 h-4 md:w-5 md:h-5"
+                        color="text-amber-800"
+                      />
+                    ) : (
+                      <Archive className="w-4 h-4 md:w-5 md:h-5" />
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
 
-            {/* Move to Trash */}
-            {!isTrash && !isStarred && (
-              <button
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-                title="Move to Trash"
-                disabled={
-                  selectedEmails.length === 0 ||
-                  loadingAction === "move:deleted"
-                }
-                onClick={() => handleMove("deleted")}
-              >
-                {loadingAction === "move:deleted" ? (
-                  <LoadingIcon
-                    size="w-4 h-4 md:w-5 md:h-5"
-                    color="text-red-600"
-                  />
-                ) : (
-                  <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                {/* Move to Spam */}
+                {!isJunk && !isStarred && (
+                  <button
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                    title="Spam"
+                    disabled={
+                      selectedEmails.length === 0 ||
+                      loadingAction === "move:junk"
+                    }
+                    onClick={() => handleMove("junk")}
+                  >
+                    {loadingAction === "move:junk" ? (
+                      <LoadingIcon
+                        size="w-4 h-4 md:w-5 md:h-5"
+                        color="text-red-600"
+                      />
+                    ) : (
+                      <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
 
-            {/* Move to Inbox */}
-            {!isInbox && !isSent && !isDraft && !isStarred && (
-              <button
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
-                title="Move to Inbox"
-                disabled={
-                  selectedEmails.length === 0 || loadingAction === "move:inbox"
-                }
-                onClick={() => handleMove("inbox")}
-              >
-                {loadingAction === "move:inbox" ? (
-                  <LoadingIcon
-                    size="w-4 h-4 md:w-5 md:h-5"
-                    color="text-blue-600"
-                  />
-                ) : (
-                  <Inbox className="w-4 h-4 md:w-5 md:h-5" />
+                {/* Move to Trash */}
+                {!isTrash && !isStarred && (
+                  <button
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
+                    title="Move to Trash"
+                    disabled={
+                      selectedEmails.length === 0 ||
+                      loadingAction === "move:deleted"
+                    }
+                    onClick={() => handleMove("deleted")}
+                  >
+                    {loadingAction === "move:deleted" ? (
+                      <LoadingIcon
+                        size="w-4 h-4 md:w-5 md:h-5"
+                        color="text-red-600"
+                      />
+                    ) : (
+                      <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
 
-            {/* Mark as Read */}
-            <button
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
-              onClick={handleMarkAsRead}
-              disabled={
-                selectedEmails.length === 0 || loadingAction === "markAsRead"
-              }
-              title="Mark as Read"
-            >
-              {loadingAction === "markAsRead" ? (
-                <LoadingIcon
-                  size="w-4 h-4 md:w-5 md:h-5"
-                  color="text-green-400"
-                />
-              ) : (
-                <Mail className="w-4 h-4 md:w-5 md:h-5" />
-              )}
-            </button>
+                {/* Move to Inbox */}
+                {!isInbox && !isSent && !isDraft && !isStarred && (
+                  <button
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
+                    title="Move to Inbox"
+                    disabled={
+                      selectedEmails.length === 0 ||
+                      loadingAction === "move:inbox"
+                    }
+                    onClick={() => handleMove("inbox")}
+                  >
+                    {loadingAction === "move:inbox" ? (
+                      <LoadingIcon
+                        size="w-4 h-4 md:w-5 md:h-5"
+                        color="text-blue-600"
+                      />
+                    ) : (
+                      <Inbox className="w-4 h-4 md:w-5 md:h-5" />
+                    )}
+                  </button>
+                )}
+
+                {/* Mark as Read */}
+                <button
+                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+                  onClick={handleMarkAsRead}
+                  disabled={
+                    selectedEmails.length === 0 ||
+                    loadingAction === "markAsRead"
+                  }
+                  title="Mark as Read"
+                >
+                  {loadingAction === "markAsRead" ? (
+                    <LoadingIcon
+                      size="w-4 h-4 md:w-5 md:h-5"
+                      color="text-green-400"
+                    />
+                  ) : (
+                    <Mail className="w-4 h-4 md:w-5 md:h-5" />
+                  )}
+                </button>
+              </>
+            )}
           </div>
 
           {/* Compose */}

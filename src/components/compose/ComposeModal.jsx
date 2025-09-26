@@ -6,7 +6,7 @@ import ConfirmDialog from "../ui/ConfirmDialog";
 import { sendEmailApi, saveDraftApi } from "../../services/api";
 import { useEmails } from "../../context/EmailContext";
 
-const ComposeModal = ({ isOpen, onClose, draft }) => {
+const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
   // State untuk form fields
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
@@ -306,10 +306,12 @@ const ComposeModal = ({ isOpen, onClose, draft }) => {
           {/* Modal Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800">
-              {draft ? "Edit Draft" : "New Message"}
+              {mode === "draft" && "Edit Draft"}
+              {mode === "reply" && "Reply Message"}
+              {mode === "forward" && "Forward Message"}
+              {mode === "new" && "New Message"}
             </h2>
             <div className="flex items-center gap-2">
-              {/* Close Button */}
               <button
                 onClick={handleClose}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
