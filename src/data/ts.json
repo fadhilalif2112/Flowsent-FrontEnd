@@ -3,6 +3,7 @@
     {
       "uid": 14,
       "folder": "INBOX",
+      "draftId": "",
       "messageId": "CANSg8Cv23TiCJaW1P8FjQMn=ZQGOQxaxP3MWKZ3=gGqeX2d6WA@mail.gmail.com",
       "sender": "Alif Fadhil F",
       "senderEmail": "fadhilalif2112@gmail.com",
@@ -10,8 +11,8 @@
       "preview": "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Amet fugiat nobis\r\ntempora veniam natus adipisci earum placeat...",
       "timestamp": "22 August 2025, 14:39 GMT+0700",
       "seen": true,
-      "flagged": true,
-      "answered": false,
+      "flagged": false,
+      "answered": true,
       "recipients": [
         {
           "email": "magang@rekaprihatanto.web.id"
@@ -30,17 +31,77 @@
       ]
     }
   ],
-  "draft": [
+  "sent": [
     {
-      "uid": 19,
-      "folder": "Drafts",
-      "messageId": "0825aeadfabd3df857f73bde3f14f700@rekaprihatanto.web.id",
+      "uid": 85,
+      "folder": "Sent Items",
+      "draftId": "",
+      "messageId": "54599d52bbc1fbbc071baffd63c5b4ef@rekaprihatanto.web.id",
+      "sender": "Me",
+      "senderEmail": "magang@rekaprihatanto.web.id",
+      "subject": "TES KIRIM EMAIL DARI FLOWSENT",
+      "preview": "TES KIRIM EMAIL DARI FLOWSENTTES KIRIM EMAIL DARI FLOWSENTTES KIRIM EMAIL DARI FLOWSENT",
+      "timestamp": "25 September 2025, 08:22 GMT+0000",
+      "seen": true,
+      "flagged": false,
+      "answered": false,
+      "recipients": [
+        {
+          "email": "ozanbp12@gmail.com"
+        }
+      ],
+      "body": {
+        "text": "TES KIRIM EMAIL DARI FLOWSENTTES KIRIM EMAIL DARI FLOWSENTTES KIRIM EMAIL DARI FLOWSENT",
+        "html": "<p><strong><em><u>TES KIRIM EMAIL DARI FLOWSENT</u></em></strong></p><p><strong><em><u>TES KIRIM EMAIL DARI FLOWSENT</u></em></strong></p><p><strong><em><u>TES KIRIM EMAIL DARI FLOWSENT</u></em></strong></p>"
+      },
+      "rawAttachments": [
+        {
+          "filename": "profilrw.sql",
+          "size": 31068,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/85/download/profilrw.sql"
+        }
+      ]
+    }
+  ],
+  "draft": [],
+  "deleted": [
+    {
+      "uid": 178,
+      "folder": "Deleted Items",
+      "draftId": "",
+      "messageId": "437c57962f21f18ce4939052df598f45@rekaprihatanto.web.id",
       "sender": "Draft",
       "senderEmail": "magang@rekaprihatanto.web.id",
-      "subject": "MEMBUAT DRAFT DI FLOWSENT DENGAN ATTACHMENT",
-      "preview": "COBA KIRIM DARI FLOWSENT DRAFTLorem ipsum dolor sit amet consectetur adipisicing elit. Natus ad maxime nam nemo in verit...",
-      "timestamp": "11 September 2025, 08:45 GMT+0000",
-      "seen": false,
+      "subject": "TEST DRAFT PART I",
+      "preview": "TEST DRAFT PART ITEST DRAFT PART ITEST DRAFT PART I",
+      "timestamp": "26 September 2025, 04:08 GMT+0000",
+      "seen": true,
+      "flagged": false,
+      "answered": false,
+      "recipients": [],
+      "body": {
+        "text": "TEST DRAFT PART ITEST DRAFT PART ITEST DRAFT PART I",
+        "html": "<p><strong><em><u>TEST DRAFT PART I</u></em></strong></p><p><strong><em><u>TEST DRAFT PART I</u></em></strong></p><p><strong><em><u>TEST DRAFT PART I</u></em></strong></p>"
+      },
+      "rawAttachments": [
+        {
+          "filename": "blank2.png",
+          "size": 2032,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/178/download/blank2.png"
+        }
+      ]
+    },
+    {
+      "uid": 174,
+      "folder": "Deleted Items",
+      "draftId": "",
+      "messageId": "9f6def6ec73015b2c3907d49686d92f0@rekaprihatanto.web.id",
+      "sender": "Me",
+      "senderEmail": "magang@rekaprihatanto.web.id",
+      "subject": "TES KIRIM DARI FLOWSENT OLD V",
+      "preview": "TES KIRIM DARI FLOWSENT OLD VTES KIRIM DARI FLOWSENT OLD VTES KIRIM DARI FLOWSENT OLD V",
+      "timestamp": "24 September 2025, 06:21 GMT+0000",
+      "seen": true,
       "flagged": false,
       "answered": false,
       "recipients": [
@@ -49,24 +110,89 @@
         }
       ],
       "body": {
-        "text": "COBA KIRIM DARI FLOWSENT DRAFTLorem ipsum dolor sit amet consectetur adipisicing elit. Natus ad maxime nam nemo in veritatis, dolores exercitationem neque repellat facilis aliquid vel quae aspernatur magni.",
-        "html": "<h1><span style=\"color: rgb(34, 34, 34); background-color: rgb(255, 255, 255);\">COBA KIRIM DARI FLOWSENT DRAFT</span></h1><h1><strong style=\"color: rgb(34, 34, 34); background-color: rgb(255, 255, 255);\"><em><u>Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus ad maxime nam nemo in veritatis, dolores exercitationem neque repellat facilis aliquid vel quae aspernatur magni.</u></em></strong></h1>"
+        "text": "TES KIRIM DARI FLOWSENT OLD VTES KIRIM DARI FLOWSENT OLD VTES KIRIM DARI FLOWSENT OLD V",
+        "html": "<p><strong><em><s><u>TES KIRIM DARI FLOWSENT OLD V</u></s></em></strong></p><p><strong><em><s><u>TES KIRIM DARI FLOWSENT OLD V</u></s></em></strong></p><p><strong><em><s><u>TES KIRIM DARI FLOWSENT OLD V</u></s></em></strong></p>"
       },
       "rawAttachments": [
         {
           "filename": "blank1.png",
           "size": 2010,
-          "download_url": "http://127.0.0.1:8000/emails/attachments/19/download/blank1.png"
-        },
+          "download_url": "http://127.0.0.1:8000/emails/attachments/174/download/blank1.png"
+        }
+      ]
+    },
+    {
+      "uid": 179,
+      "folder": "Deleted Items",
+      "draftId": "",
+      "messageId": "CAL_EwtZ__mvuaz+qPHjZ35-46Jyj5vFu=GxwuexsOaQ1nveicg@mail.gmail.com",
+      "sender": "FadhilAlif14",
+      "senderEmail": "dhilajh123@gmail.com",
+      "subject": "Konfirmasi Penerimaan Dokumen Penawaran Harga",
+      "preview": "Tentu, ini 10 contoh email dummy yang sudah terisi penuh dengan data fiktif\r\ndan terstruktur seperti email profesional....",
+      "timestamp": "18 September 2025, 18:18 GMT+0700",
+      "seen": true,
+      "flagged": false,
+      "answered": false,
+      "recipients": [
         {
-          "filename": "blank2.png",
-          "size": 2032,
-          "download_url": "http://127.0.0.1:8000/emails/attachments/19/download/blank2.png"
+          "email": "magang@rekaprihatanto.web.id"
+        }
+      ],
+      "body": {
+        "text": "Tentu, ini 10 contoh email dummy yang sudah terisi penuh dengan data fiktif\r\ndan terstruktur seperti email profesional.\r\n------------------------------\r\n\r\n1. Proposal Kerja Sama\r\n\r\n*Subjek:* Proposal Kerja Sama dengan PT. Inovasi Digital\r\n\r\n*Isi:*\r\n\r\nYth. Bapak Budi Santoso,\r\n\r\nDengan hormat,\r\n\r\nKami dari PT. Inovasi Digital ingin memperkenalkan diri sebagai perusahaan\r\nyang berfokus pada pengembangan solusi perangkat lunak terintegrasi.\r\nBerdasarkan riset kami, Global Solusi Teknologi memiliki reputasi yang\r\nsangat baik di bidang layanan cloud, dan kami melihat adanya potensi\r\nsinergi yang besar antara kedua belah pihak.\r\n\r\nKami telah menyiapkan sebuah proposal terperinci yang mencakup bagaimana\r\nkolaborasi ini dapat menguntungkan kedua perusahaan, mulai dari peningkatan\r\nefisiensi operasional hingga pembukaan segmen pasar baru. Proposal ini juga\r\nmerinci berbagai skema kerja sama yang bisa kita jajaki, termasuk proyek\r\nbersama dalam pengembangan aplikasi mobile dan pemasaran kolaboratif.\r\n\r\nBesar harapan kami agar Bapak bersedia meluangkan waktu untuk membahas\r\nlebih lanjut proposal ini. Mohon informasikan ketersediaan Anda untuk\r\npertemuan virtual singkat minggu depan.\r\n\r\nTerima kasih atas waktu dan perhatiannya.\r\n\r\nHormat kami, Rian Aditama Manajer Proyek PT. Inovasi Digital\r\n------------------------------\r\n\r\n2. Update Proyek\r\n\r\n*Subjek:* Update Proyek 'Apollo' - Tahap Pengembangan Awal\r\n\r\n*Isi:*\r\n\r\nHalo Tim,\r\n\r\nSebagai kelanjutan dari pertemuan terakhir, berikut adalah ringkasan\r\nprogres proyek *'Apollo'* hingga hari ini.\r\n\r\nKami telah berhasil menyelesaikan tahap Pengembangan Awal, termasuk desain\r\nantarmuka pengguna (UI/UX) dan pengembangan prototipe awal. Tim IT juga\r\ntelah mulai mengerjakan integrasi basis data dan sejauh ini berjalan sesuai\r\ndengan rencana.\r\n\r\nNamun, kami menemukan adanya sedikit hambatan terkait ketersediaan data\r\nawal. Kami sedang berkoordinasi dengan Tim Data Analitik untuk mencari\r\nsolusi terbaik dan meminimalisir dampak pada jadwal.\r\n\r\nMohon tinjauan Anda atas laporan progres yang terlampir. Jika ada\r\npertanyaan atau masukan, silakan sampaikan sebelum pertemuan tim berikutnya\r\npada hari Jumat, 20 September 2025.\r\n\r\nTerima kasih atas kerja kerasnya.\r\n\r\nSalam, Rian Aditama Manajer Proyek\r\n------------------------------\r\n\r\n3. Undangan Rapat\r\n\r\n*Subjek:* Undangan Rapat: Strategi Pemasaran Kuartal 4\r\n\r\n*Isi:*\r\n\r\nYth. Tim Pemasaran,\r\n\r\nSelamat pagi,\r\n\r\nMelalui email ini, kami mengundang Anda untuk menghadiri rapat internal\r\nyang akan membahas strategi pemasaran untuk kuartal 4. Rapat ini sangat\r\npenting untuk menyelaraskan target tim dan memastikan kita siap menghadapi\r\ntantangan pasar di akhir tahun.\r\n\r\nBerikut adalah detail rapat:\r\n\r\n   -\r\n\r\n   *Topik:* Strategi Pemasaran Kuartal 4\r\n   -\r\n\r\n   *Tanggal:* 25 September 2025\r\n   -\r\n\r\n   *Waktu:* 10.00 WIB\r\n   -\r\n\r\n   *Tempat/Platform:* Google Meet (meet.google.com/xyz-abc-def\r\n   <https://www.google.com/search?q=https://meet.google.com/xyz-abc-def>)\r\n\r\nAgenda utama rapat mencakup evaluasi kinerja kuartal 3, presentasi ide-ide\r\nbaru, dan alokasi anggaran. Mohon siapkan presentasi singkat mengenai ide\r\natau analisis Anda terkait topik ini.\r\n\r\nKehadiran Anda sangat kami harapkan. Mohon konfirmasi kehadiran Anda\r\nmelalui email ini.\r\n\r\nTerima kasih.\r\n\r\nHormat kami, Rian Aditama Manajer Pemasaran\r\n------------------------------\r\n\r\n4. Permohonan Data\r\n\r\n*Subjek:* Permohonan Data: Laporan Keuangan Bulan Agustus\r\n\r\n*Isi:*\r\n\r\nKepada Tim Keuangan,\r\n\r\nSemoga email ini menemukan Anda dalam keadaan baik.\r\n\r\nSaya mohon bantuan Anda untuk mengirimkan laporan data keuangan untuk\r\nperiode bulan *Agustus*. Data tersebut sangat kami perlukan untuk\r\npenyusunan laporan tahunan.\r\n\r\nBerikut adalah rincian data yang kami butuhkan:\r\n\r\n   -\r\n\r\n   Laporan laba rugi bulanan\r\n   -\r\n\r\n   Neraca per akhir bulan\r\n   -\r\n\r\n   Rincian pengeluaran per departemen\r\n\r\nKami akan sangat menghargai jika data tersebut dapat dikirimkan paling\r\nlambat hari Jumat, 20 September 2025, untuk memastikan tidak ada\r\nketerlambatan dalam proses pelaporan kami.\r\n\r\nJika ada kendala dalam penyusunan laporan ini, mohon segera informasikan\r\nkepada saya.\r\n\r\nTerima kasih banyak atas kerja sama Anda.\r\n\r\nHormat saya, Rian Aditama Manajer Proyek\r\n------------------------------\r\n\r\nYth. Bapak/Ibu Devi Nuraini,\r\n\r\nTerima kasih atas emailnya.\r\n\r\nSaya ingin mengonfirmasi bahwa saya telah menerima dokumen *Penawaran Harga*\r\nyang Anda kirimkan. Saya akan segera meninjau isi dokumen tersebut dan akan\r\nkembali menghubungi Anda dalam waktu dekat jika ada hal yang perlu\r\nditanyakan atau dikonfirmasi.\r\n\r\nDokumen-dokumen yang telah saya terima meliputi:\r\n\r\n   -\r\n\r\n   Penawaran Harga Proyek \"Apollo\"\r\n   -\r\n\r\n   Rincian Biaya Material\r\n   -\r\n\r\n   Jadwal Pelaksanaan\r\n\r\nSekali lagi, terima kasih atas pengiriman dokumen ini.\r\n\r\nHormat saya, Rian Aditama Manajer Proyek",
+        "html": "<div dir=\"ltr\"><p>Tentu, ini 10 contoh email dummy yang sudah terisi penuh dengan data fiktif dan terstruktur seperti email profesional.</p><hr><p></p><h3>1. Proposal Kerja Sama</h3><p></p><p><b>Subjek:</b> Proposal Kerja Sama dengan PT. Inovasi Digital</p><p><b>Isi:</b></p><p>Yth. Bapak Budi Santoso,</p><p>Dengan hormat,</p><p>Kami dari PT. Inovasi Digital ingin memperkenalkan diri sebagai perusahaan yang berfokus pada pengembangan solusi perangkat lunak terintegrasi. Berdasarkan riset kami, Global Solusi Teknologi memiliki reputasi yang sangat baik di bidang layanan cloud, dan kami melihat adanya potensi sinergi yang besar antara kedua belah pihak.</p><p>Kami telah menyiapkan sebuah proposal terperinci yang mencakup bagaimana kolaborasi ini dapat menguntungkan kedua perusahaan, mulai dari peningkatan efisiensi operasional hingga pembukaan segmen pasar baru. Proposal ini juga merinci berbagai skema kerja sama yang bisa kita jajaki, termasuk proyek bersama dalam pengembangan aplikasi mobile dan pemasaran kolaboratif.</p><p>Besar harapan kami agar Bapak bersedia meluangkan waktu untuk membahas lebih lanjut proposal ini. Mohon informasikan ketersediaan Anda untuk pertemuan virtual singkat minggu depan.</p><p>Terima kasih atas waktu dan perhatiannya.</p><p>Hormat kami,\r\nRian Aditama\r\nManajer Proyek\r\nPT. Inovasi Digital</p><hr><p></p><h3>2. Update Proyek</h3><p></p><p><b>Subjek:</b> Update Proyek &#39;Apollo&#39; - Tahap Pengembangan Awal</p><p><b>Isi:</b></p><p>Halo Tim,</p><p>Sebagai kelanjutan dari pertemuan terakhir, berikut adalah ringkasan progres proyek <b>&#39;Apollo&#39;</b> hingga hari ini.</p><p>Kami telah berhasil menyelesaikan tahap Pengembangan Awal, termasuk desain antarmuka pengguna (UI/UX) dan pengembangan prototipe awal. Tim IT juga telah mulai mengerjakan integrasi basis data dan sejauh ini berjalan sesuai dengan rencana.</p><p>Namun, kami menemukan adanya sedikit hambatan terkait ketersediaan data awal. Kami sedang berkoordinasi dengan Tim Data Analitik untuk mencari solusi terbaik dan meminimalisir dampak pada jadwal.</p><p>Mohon tinjauan Anda atas laporan progres yang terlampir. Jika ada pertanyaan atau masukan, silakan sampaikan sebelum pertemuan tim berikutnya pada hari Jumat, 20 September 2025.</p><p>Terima kasih atas kerja kerasnya.</p><p>Salam,\r\nRian Aditama\r\nManajer Proyek</p><hr><p></p><h3>3. Undangan Rapat</h3><p></p><p><b>Subjek:</b> Undangan Rapat: Strategi Pemasaran Kuartal 4</p><p><b>Isi:</b></p><p>Yth. Tim Pemasaran,</p><p>Selamat pagi,</p><p>Melalui email ini, kami mengundang Anda untuk menghadiri rapat internal yang akan membahas strategi pemasaran untuk kuartal 4. Rapat ini sangat penting untuk menyelaraskan target tim dan memastikan kita siap menghadapi tantangan pasar di akhir tahun.</p><p>Berikut adalah detail rapat:</p><ul><li><p><b>Topik:</b> Strategi Pemasaran Kuartal 4</p></li><li><p><b>Tanggal:</b> 25 September 2025</p></li><li><p><b>Waktu:</b> 10.00 WIB</p></li><li><p><b>Tempat/Platform:</b> Google Meet (<span class=\"gmail-\"><span class=\"gmail-ng-star-inserted\"><a target=\"_blank\" rel=\"noopener\" href=\"https://www.google.com/search?q=https://meet.google.com/xyz-abc-def\" class=\"gmail-ng-star-inserted\">meet.google.com/xyz-abc-def</a></span></span>)</p></li></ul><p>Agenda utama rapat mencakup evaluasi kinerja kuartal 3, presentasi ide-ide baru, dan alokasi anggaran. Mohon siapkan presentasi singkat mengenai ide atau analisis Anda terkait topik ini.</p><p>Kehadiran Anda sangat kami harapkan. Mohon konfirmasi kehadiran Anda melalui email ini.</p><p>Terima kasih.</p><p>Hormat kami,\r\nRian Aditama\r\nManajer Pemasaran</p><hr><p></p><h3>4. Permohonan Data</h3><p></p><p><b>Subjek:</b> Permohonan Data: Laporan Keuangan Bulan Agustus</p><p><b>Isi:</b></p><p>Kepada Tim Keuangan,</p><p>Semoga email ini menemukan Anda dalam keadaan baik.</p><p>Saya mohon bantuan Anda untuk mengirimkan laporan data keuangan untuk periode bulan <b>Agustus</b>. Data tersebut sangat kami perlukan untuk penyusunan laporan tahunan.</p><p>Berikut adalah rincian data yang kami butuhkan:</p><ul><li><p>Laporan laba rugi bulanan</p></li><li><p>Neraca per akhir bulan</p></li><li><p>Rincian pengeluaran per departemen</p></li></ul><p>Kami akan sangat menghargai jika data tersebut dapat dikirimkan paling lambat hari Jumat, 20 September 2025, untuk memastikan tidak ada keterlambatan dalam proses pelaporan kami.</p><p>Jika ada kendala dalam penyusunan laporan ini, mohon segera informasikan kepada saya.</p><p>Terima kasih banyak atas kerja sama Anda.</p><p>Hormat saya,\r\nRian Aditama\r\nManajer Proyek</p><hr><p></p><h3><span style=\"font-size:small;font-weight:normal\">Yth. Bapak/Ibu Devi Nuraini,</span></h3><p>Terima kasih atas emailnya.</p><p>Saya ingin mengonfirmasi bahwa saya telah menerima dokumen <b>Penawaran Harga</b> yang Anda kirimkan. Saya akan segera meninjau isi dokumen tersebut dan akan kembali menghubungi Anda dalam waktu dekat jika ada hal yang perlu ditanyakan atau dikonfirmasi.</p><p>Dokumen-dokumen yang telah saya terima meliputi:</p><ul><li><p>Penawaran Harga Proyek &quot;Apollo&quot;</p></li><li><p>Rincian Biaya Material</p></li><li><p>Jadwal Pelaksanaan</p></li></ul><p>Sekali lagi, terima kasih atas pengiriman dokumen ini.</p><p>Hormat saya,\r\nRian Aditama\r\nManajer Proyek</p></div>"
+      },
+      "rawAttachments": [
+        {
+          "filename": "EmailList.jsx",
+          "size": 13648,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/179/download/EmailList.jsx"
         }
       ]
     }
   ],
-  "deleted": [],
   "junk": [],
-  "archive": []
+  "archive": [
+    {
+      "uid": 49,
+      "folder": "Archive",
+      "draftId": "",
+      "messageId": "e5a5249693a173adba37c9d4e8632857@rekaprihatanto.web.id",
+      "sender": "Me",
+      "senderEmail": "magang@rekaprihatanto.web.id",
+      "subject": "Test kirim dari flowsent",
+      "preview": "Test kirim dari flowsent",
+      "timestamp": "23 September 2025, 10:07 GMT+0000",
+      "seen": true,
+      "flagged": true,
+      "answered": false,
+      "recipients": [
+        {
+          "email": "fadhilalif2112@gmail.com"
+        }
+      ],
+      "body": {
+        "text": "Test kirim dari flowsent",
+        "html": "<p><strong><em><u>Test kirim dari flowsent</u></em></strong></p>"
+      },
+      "rawAttachments": [
+        {
+          "filename": "blank1.png",
+          "size": 2010,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/49/download/blank1.png"
+        },
+        {
+          "filename": "blank2.png",
+          "size": 2032,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/49/download/blank2.png"
+        },
+        {
+          "filename": "celerates.jpg",
+          "size": 9330,
+          "download_url": "http://127.0.0.1:8000/emails/attachments/49/download/celerates.jpg"
+        }
+      ]
+    }
+  ]
 }

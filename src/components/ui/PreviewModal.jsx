@@ -1,4 +1,3 @@
-// src/components/ui/PreviewModal.jsx
 import React, { useEffect } from "react";
 
 const PreviewModal = ({ url, type, filename, onClose }) => {
@@ -130,26 +129,26 @@ const PreviewModal = ({ url, type, filename, onClose }) => {
           {/* Print button */}
           <button
             onClick={() => {
-              if (isImage) {
-                // For images, create a new window for printing
-                const printWindow = window.open("", "_blank");
-                printWindow.document.write(`
-                  <html>
-                    <head>
-                      <title>Print ${filename}</title>
-                      <style>
-                        body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-                        img { max-width: 100%; max-height: 100%; object-fit: contain; }
-                      </style>
-                    </head>
-                    <body>
-                      <img src="${url}" onload="window.print(); window.close();" />
-                    </body>
-                  </html>
-                `);
-                printWindow.document.close();
+              if (isImage || isPdf) {
+                const printFrame = document.createElement("iframe");
+                printFrame.style.position = "fixed";
+                printFrame.style.right = "0";
+                printFrame.style.bottom = "0";
+                printFrame.style.width = "0";
+                printFrame.style.height = "0";
+                printFrame.style.border = "0";
+                printFrame.src = url;
+
+                printFrame.onload = () => {
+                  printFrame.contentWindow.focus();
+                  printFrame.contentWindow.print();
+                  // optional: remove iframe setelah selesai
+                  setTimeout(() => document.body.removeChild(printFrame), 1000);
+                };
+
+                document.body.appendChild(printFrame);
               } else {
-                // For other files, open in new window and print
+                // fallback untuk file lain
                 const printWindow = window.open(url, "_blank");
                 printWindow.onload = () => {
                   printWindow.print();

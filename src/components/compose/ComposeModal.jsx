@@ -18,6 +18,10 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
   // State untuk attachment
   const [attachments, setAttachments] = useState([]);
 
+  // State untuk draft info
+  const [draftId, setDraftId] = useState(null);
+  const [messageId, setMessageId] = useState(null);
+
   // State untuk link dialog
   const [linkDialog, setLinkDialog] = useState({
     show: false,
@@ -74,11 +78,15 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
           setBody(draftContent);
         }, 0);
 
+        setDraftId(draft.draftId || null);
+        setMessageId(draft.messageId || null);
+
         if (draft.rawAttachments) {
           const normalized = draft.rawAttachments.map((att) => ({
             name: att.filename,
             size: att.size,
             downloadUrl: att.download_url,
+            mime: att.mime_type || "application/octet-stream",
             isServer: true, // tandai ini attachment lama
           }));
           setAttachments(normalized);
@@ -166,11 +174,40 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
     if (!validateForm()) return;
     setSending(true);
     try {
+      // Pisahkan attachments baru (File) dan stored (server)
+      const newAttachments = attachments
+        .filter((att) => !att.isServer)
+        .map((att) => att.file);
+
+      const storedAttachmentsList = attachments
+        .filter((att) => att.isServer)
+        .map((att) => ({
+          name: att.name,
+          mime: att.mime || "application/octet-stream",
+        }));
+
+      console.log("Sending email with data:", {
+        to: to.trim(),
+        subject: subject.trim(),
+        body,
+        newAttachments: newAttachments.map((f) => ({
+          name: f.name,
+          size: f.size,
+          type: f.type,
+        })),
+        storedAttachments: storedAttachmentsList,
+        draftId,
+        messageId,
+      });
+
       const result = await sendEmailApi({
         to: to.trim(),
         subject: subject.trim(),
         body,
-        attachments,
+        attachments: newAttachments,
+        draftId,
+        storedAttachments: storedAttachmentsList,
+        messageId,
       });
 
       showNotification(
@@ -186,7 +223,7 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
         onClose();
       }, 1000);
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.error("Error sending email:", error.message, error.stack);
       showNotification(
         "error",
         error.message || "Failed to send email.",
@@ -197,15 +234,19 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
       setSending(false);
     }
   };
-
   const handleSaveDraft = async () => {
     setDrafting(true);
     try {
+      // Untuk save draft, gunakan attachments baru saja (File), stored akan ditangani di backend jika edit draft
+      const draftAttachments = attachments
+        .filter((att) => !att.isServer)
+        .map((att) => att.file);
+
       const result = await saveDraftApi({
         to: to.trim(),
         subject: subject.trim() || "(No Subject)",
         body,
-        attachments,
+        attachments: draftAttachments,
       });
 
       showNotification(
@@ -239,6 +280,8 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
     setBody("");
     setErrors({});
     setAttachments([]);
+    setDraftId(null);
+    setMessageId(null);
   };
 
   const handleClose = () => {
@@ -254,7 +297,7 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
     }
   };
 
-  // Handler untuk file input change
+  // Handler untuk file input change (attachments baru)
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     const maxSize = 10 * 1024 * 1024; // 10MB
@@ -269,18 +312,25 @@ const ComposeModal = ({ isOpen, onClose, draft, mode = "new" }) => {
         5000,
         "top-center"
       );
-      const validFiles = files.filter((file) => file.size <= maxSize);
-      setAttachments((prev) => [...prev, ...validFiles]);
-    } else {
-      setAttachments((prev) => [...prev, ...files]);
-      if (files.length > 0) {
-        showNotification(
-          "info",
-          `${files.length} file(s) attached successfully.`,
-          3000,
-          "bottom-left"
-        );
-      }
+    }
+
+    const validFiles = files.filter((file) => file.size <= maxSize);
+    const newAtts = validFiles.map((file) => ({
+      name: file.name,
+      size: file.size,
+      file, // simpan File object untuk upload
+      isServer: false,
+      mime: file.type,
+    }));
+    setAttachments((prev) => [...prev, ...newAtts]);
+
+    if (validFiles.length > 0) {
+      showNotification(
+        "info",
+        `${validFiles.length} file(s) attached successfully.`,
+        3000,
+        "bottom-left"
+      );
     }
   };
 

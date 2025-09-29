@@ -221,119 +221,97 @@ const EmailItem = ({
   const isDraft = folderName === "draft";
   const isStarredpage = folderName === "starred";
 
+  // Helper: folder yang tidak support flag/mark as read
+  const disableFlags = isSent || isDraft || isTrash;
+
   // Komponen tombol yang bisa dipakai ulang
-  const renderActions = (isMobile = false) => {
-    if (isDraft) {
-      return (
-        <div>
-          <button
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-            title="Move to Trash"
-            onClick={(e) => handleMove(e, "deleted")}
-            disabled={loadingAction === "deleted"}
-          >
-            {loadingAction === "deleted" ? (
-              <LoadingIcon size="w-4 h-4" color="text-red-600" />
-            ) : (
-              <Trash2 className="w-4 h-4" />
-            )}
-          </button>
-          <button
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
-            title="Mark as read"
-            onClick={handleMarkAsRead}
-            disabled={loadingAction === "markasread"}
-          >
-            {loadingAction === "markasread" ? (
-              <LoadingIcon size="w-4 h-4" color="text-green-400" />
-            ) : (
-              <Mail className="w-4 h-4" />
-            )}
-          </button>
-        </div>
-      );
-    }
-
-    if (isStarredpage) {
-      return (
-        <button
-          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
-          title="Mark as read"
-          onClick={handleMarkAsRead}
-          disabled={loadingAction === "markasread"}
-        >
-          {loadingAction === "markasread" ? (
-            <LoadingIcon size="w-4 h-4" color="text-green-400" />
-          ) : (
-            <Mail className="w-4 h-4" />
-          )}
-        </button>
-      );
-    }
-
+  const renderActions = () => {
     return (
       <>
-        {!isArchive && (
-          <button
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
-            title="Archive"
-            onClick={(e) => handleMove(e, "archive")}
-            disabled={loadingAction === "archive"}
-          >
-            {loadingAction === "archive" ? (
-              <LoadingIcon size="w-4 h-4" color="text-amber-800" />
-            ) : (
-              <Archive className="w-4 h-4" />
-            )}
-          </button>
-        )}
-        {!isJunk && (
-          <button
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-            title="Spam"
-            onClick={(e) => handleMove(e, "junk")}
-            disabled={loadingAction === "junk"}
-          >
-            {loadingAction === "junk" ? (
-              <LoadingIcon size="w-4 h-4" color="text-red-600" />
-            ) : (
-              <CircleAlert className="w-4 h-4" />
-            )}
-          </button>
-        )}
-        {!isTrash && (
-          <button
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-            title="Delete"
-            onClick={(e) => handleMove(e, "deleted")}
-            disabled={loadingAction === "deleted"}
-          >
-            {loadingAction === "deleted" ? (
-              <LoadingIcon size="w-4 h-4" color="text-red-600" />
-            ) : (
-              <Trash2 className="w-4 h-4" />
-            )}
-          </button>
-        )}
-        {!isInbox && !isSent && !isDraft && (
-          <button
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
-            title="Move to Inbox"
-            onClick={(e) => handleMove(e, "inbox")}
-            disabled={loadingAction === "inbox"}
-          >
-            {loadingAction === "inbox" ? (
-              <LoadingIcon size="w-4 h-4" color="text-blue-600" />
-            ) : (
-              <Inbox className="w-4 h-4" />
-            )}
-          </button>
-        )}
+        {/* Archive */}
         <button
-          className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
+          className={`p-2 rounded-lg transition-colors ${
+            isArchive
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-500 hover:bg-gray-200 hover:text-amber-800"
+          }`}
+          title="Archive"
+          onClick={(e) => !isArchive && handleMove(e, "archive")}
+          disabled={isArchive || loadingAction === "archive"}
+        >
+          {loadingAction === "archive" ? (
+            <LoadingIcon size="w-4 h-4" color="text-amber-800" />
+          ) : (
+            <Archive className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Spam */}
+        <button
+          className={`p-2 rounded-lg transition-colors ${
+            isJunk
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-500 hover:bg-gray-200 hover:text-red-600"
+          }`}
+          title="Spam"
+          onClick={(e) => !isJunk && handleMove(e, "junk")}
+          disabled={isJunk || loadingAction === "junk"}
+        >
+          {loadingAction === "junk" ? (
+            <LoadingIcon size="w-4 h-4" color="text-red-600" />
+          ) : (
+            <CircleAlert className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Delete */}
+        <button
+          className={`p-2 rounded-lg transition-colors ${
+            isTrash
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-500 hover:bg-gray-200 hover:text-red-600"
+          }`}
+          title="Delete"
+          onClick={(e) => !isTrash && handleMove(e, "deleted")}
+          disabled={isTrash || loadingAction === "deleted"}
+        >
+          {loadingAction === "deleted" ? (
+            <LoadingIcon size="w-4 h-4" color="text-red-600" />
+          ) : (
+            <Trash2 className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Move to Inbox */}
+        <button
+          className={`p-2 rounded-lg transition-colors ${
+            isInbox || isSent || isDraft
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-500 hover:bg-gray-200 hover:text-blue-600"
+          }`}
+          title="Move to Inbox"
+          onClick={(e) =>
+            !isInbox && !isSent && !isDraft && handleMove(e, "inbox")
+          }
+          disabled={isInbox || isSent || isDraft || loadingAction === "inbox"}
+        >
+          {loadingAction === "inbox" ? (
+            <LoadingIcon size="w-4 h-4" color="text-blue-600" />
+          ) : (
+            <Inbox className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Mark as Read */}
+        <button
+          className={`p-2 rounded-lg transition-colors ${
+            disableFlags
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-500 hover:bg-gray-200 hover:text-green-400"
+          }`}
           title="Mark as read"
-          onClick={handleMarkAsRead}
-          disabled={loadingAction === "markasread"}
+          onClick={(e) => !disableFlags && handleMarkAsRead(e)}
+          disabled={disableFlags || loadingAction === "markasread"}
         >
           {loadingAction === "markasread" ? (
             <LoadingIcon size="w-4 h-4" color="text-green-400" />
@@ -365,23 +343,28 @@ const EmailItem = ({
       />
 
       <div className="flex flex-col items-center space-y-1">
-        <button
-          onClick={handleStarToggle}
-          disabled={starring}
-          className={`flex-shrink-0 mt-1 md:mt-0 transition-colors group-hover:text-gray-400 ${
-            starring
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-300 hover:text-yellow-500"
-          }`}
-        >
-          {starring ? (
-            <LoadingIcon size="w-4 h-4 md:w-5 md:h-5" color="text-yellow-500" />
-          ) : isStarred ? (
-            <Star className="w-4 h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
-          ) : (
-            <Star className="w-4 h-4 md:w-5 md:h-5" />
-          )}
-        </button>
+        {!disableFlags && (
+          <button
+            onClick={handleStarToggle}
+            disabled={starring}
+            className={`flex-shrink-0 mt-1 md:mt-0 transition-colors group-hover:text-gray-400 ${
+              starring
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-gray-300 hover:text-yellow-500"
+            }`}
+          >
+            {starring ? (
+              <LoadingIcon
+                size="w-4 h-4 md:w-5 md:h-5"
+                color="text-yellow-500"
+              />
+            ) : isStarred ? (
+              <Star className="w-4 h-4 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
+            ) : (
+              <Star className="w-4 h-4 md:w-5 md:h-5" />
+            )}
+          </button>
+        )}
         <input
           type="checkbox"
           checked={isSelected}

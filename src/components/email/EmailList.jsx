@@ -27,6 +27,7 @@ const EmailList = ({ emails, folderName }) => {
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [draftData, setDraftData] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
+  const [composeMode, setComposeMode] = useState("new");
 
   // kondisi folder
   const isInbox = folderName === "inbox";
@@ -37,11 +38,12 @@ const EmailList = ({ emails, folderName }) => {
   const isDraft = folderName === "draft";
   const isStarred = folderName === "starred";
 
+  // folder yang tidak support mark-as-read
+  const disableMarkAsRead = isSent || isDraft || isTrash;
+
   const mapFolderName = (folder) => {
     if (!folder) return "inbox";
-
     const normalized = folder.toLowerCase();
-
     const folderMap = {
       inbox: "inbox",
       "sent items": "sent",
@@ -50,12 +52,12 @@ const EmailList = ({ emails, folderName }) => {
       "junk mail": "junk",
       archive: "archive",
     };
-
     return folderMap[normalized] || "inbox";
   };
 
   const handleOpenDraft = (email) => {
     setDraftData(email);
+    setComposeMode("draft");
     setIsComposeOpen(true);
   };
 
@@ -78,7 +80,6 @@ const EmailList = ({ emails, folderName }) => {
       } else {
         newSelection = [...prev, { messageId: email.messageId }];
       }
-
       setSelectAll(newSelection.length === emails.length);
       return newSelection;
     });
@@ -97,7 +98,6 @@ const EmailList = ({ emails, folderName }) => {
     }
   };
 
-  // Optimistic Mark as Read
   const handleMarkAsRead = async () => {
     setLoadingAction("markAsRead");
     const prevState = [...emails];
@@ -111,12 +111,10 @@ const EmailList = ({ emails, folderName }) => {
       for (const sel of selectedEmails) {
         const email = emails.find((e) => e.messageId === sel.messageId);
         if (!email) continue;
-
         const folder =
           folderName === "starred"
-            ? mapFolderName(email.folder) // pakai folder asli email
+            ? mapFolderName(email.folder)
             : mapFolderName(folderName);
-
         await markAsRead(folder, sel.messageId);
       }
 
@@ -126,7 +124,6 @@ const EmailList = ({ emails, folderName }) => {
         4000,
         "bottom-left"
       );
-
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
@@ -149,20 +146,17 @@ const EmailList = ({ emails, folderName }) => {
     }
   };
 
-  // ✅ Move emails
   const handleMove = async (targetFolder) => {
     setLoadingAction(`move:${targetFolder}`);
     try {
       const messageIds = selectedEmails.map((sel) => sel.messageId);
       await moveEmail(folderName, messageIds, targetFolder);
-
       showNotification(
         "success",
         `Moved to ${targetFolder}`,
         4000,
         "bottom-left"
       );
-
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
@@ -182,9 +176,7 @@ const EmailList = ({ emails, folderName }) => {
     setLoadingAction("delete");
     try {
       const messageIds = selectedEmails.map((sel) => sel.messageId);
-
       await deletePermanent(messageIds);
-
       setSelectedEmails([]);
       setSelectAll(false);
     } catch (err) {
@@ -194,7 +186,11 @@ const EmailList = ({ emails, folderName }) => {
     }
   };
 
-  const handleComposeClick = () => setIsComposeOpen(true);
+  const handleComposeClick = () => {
+    setDraftData(null);
+    setComposeMode("new");
+    setIsComposeOpen(true);
+  };
 
   return (
     <div className="flex-1 overflow-auto bg-white">
@@ -209,29 +205,27 @@ const EmailList = ({ emails, folderName }) => {
               className="w-4 h-4 md:w-5 md:h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             {selectedEmails.length > 0 && (
-              <>
-                <span className="text-sm text-gray-600">
-                  {selectedEmails.length} selected
-                </span>
-                {isTrash && (
-                  <button
-                    onClick={handleDeletePermanent}
-                    className="ml-2 text-sm font-medium text-red-600 hover:text-red-800 hover:underline"
-                    disabled={loadingAction === "delete"}
-                  >
-                    {loadingAction === "delete" ? (
-                      <LoadingIcon size="w-3 h-3" color="text-red-600" />
-                    ) : (
-                      "Delete Forever"
-                    )}
-                  </button>
+              <span className="text-sm text-gray-600">
+                {selectedEmails.length} selected
+              </span>
+            )}
+            {isTrash && selectedEmails.length > 0 && (
+              <button
+                onClick={handleDeletePermanent}
+                className="ml-2 text-sm font-medium text-red-600 hover:text-red-800 hover:underline disabled:opacity-50"
+                disabled={loadingAction === "delete"}
+              >
+                {loadingAction === "delete" ? (
+                  <LoadingIcon size="w-3 h-3" color="text-red-600" />
+                ) : (
+                  "Delete Forever"
                 )}
-              </>
+              </button>
             )}
 
-            {/* Refresh selalu ada */}
+            {/* Refresh */}
             <button
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400"
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-400 disabled:opacity-50"
               onClick={handleRefresh}
               title="Refresh"
               disabled={loadingAction === "refresh"}
@@ -246,159 +240,116 @@ const EmailList = ({ emails, folderName }) => {
               )}
             </button>
 
-            {isDraft ? (
-              <>
-                {/* Move to Trash */}
-                <button
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-                  title="Move to Trash"
-                  disabled={
-                    selectedEmails.length === 0 ||
-                    loadingAction === "move:deleted"
-                  }
-                  onClick={() => handleMove("deleted")}
-                >
-                  {loadingAction === "move:deleted" ? (
-                    <LoadingIcon
-                      size="w-4 h-4 md:w-5 md:h-5"
-                      color="text-red-600"
-                    />
-                  ) : (
-                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                  )}
-                </button>
+            {/* Archive */}
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800 disabled:opacity-50"
+              title="Archive"
+              disabled={
+                isArchive ||
+                isStarred ||
+                selectedEmails.length === 0 ||
+                loadingAction === "move:archive"
+              }
+              onClick={() => handleMove("archive")}
+            >
+              {loadingAction === "move:archive" ? (
+                <LoadingIcon
+                  size="w-4 h-4 md:w-5 md:h-5"
+                  color="text-amber-800"
+                />
+              ) : (
+                <Archive className="w-4 h-4 md:w-5 md:h-5" />
+              )}
+            </button>
 
-                {/* Mark as Read */}
-                <button
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
-                  onClick={handleMarkAsRead}
-                  disabled={
-                    selectedEmails.length === 0 ||
-                    loadingAction === "markAsRead"
-                  }
-                  title="Mark as Read"
-                >
-                  {loadingAction === "markAsRead" ? (
-                    <LoadingIcon
-                      size="w-4 h-4 md:w-5 md:h-5"
-                      color="text-green-400"
-                    />
-                  ) : (
-                    <Mail className="w-4 h-4 md:w-5 md:h-5" />
-                  )}
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Move to Archive */}
-                {!isArchive && !isStarred && (
-                  <button
-                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-amber-800"
-                    title="Archive"
-                    disabled={
-                      selectedEmails.length === 0 ||
-                      loadingAction === "move:archive"
-                    }
-                    onClick={() => handleMove("archive")}
-                  >
-                    {loadingAction === "move:archive" ? (
-                      <LoadingIcon
-                        size="w-4 h-4 md:w-5 md:h-5"
-                        color="text-amber-800"
-                      />
-                    ) : (
-                      <Archive className="w-4 h-4 md:w-5 md:h-5" />
-                    )}
-                  </button>
-                )}
+            {/* Spam */}
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600 disabled:opacity-50"
+              title="Spam"
+              disabled={
+                isJunk ||
+                isStarred ||
+                selectedEmails.length === 0 ||
+                loadingAction === "move:junk"
+              }
+              onClick={() => handleMove("junk")}
+            >
+              {loadingAction === "move:junk" ? (
+                <LoadingIcon
+                  size="w-4 h-4 md:w-5 md:h-5"
+                  color="text-red-600"
+                />
+              ) : (
+                <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
+              )}
+            </button>
 
-                {/* Move to Spam */}
-                {!isJunk && !isStarred && (
-                  <button
-                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-                    title="Spam"
-                    disabled={
-                      selectedEmails.length === 0 ||
-                      loadingAction === "move:junk"
-                    }
-                    onClick={() => handleMove("junk")}
-                  >
-                    {loadingAction === "move:junk" ? (
-                      <LoadingIcon
-                        size="w-4 h-4 md:w-5 md:h-5"
-                        color="text-red-600"
-                      />
-                    ) : (
-                      <CircleAlert className="w-4 h-4 md:w-5 md:h-5" />
-                    )}
-                  </button>
-                )}
+            {/* Trash */}
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600 disabled:opacity-50"
+              title="Move to Trash"
+              disabled={
+                isTrash ||
+                isStarred ||
+                selectedEmails.length === 0 ||
+                loadingAction === "move:deleted"
+              }
+              onClick={() => handleMove("deleted")}
+            >
+              {loadingAction === "move:deleted" ? (
+                <LoadingIcon
+                  size="w-4 h-4 md:w-5 md:h-5"
+                  color="text-red-600"
+                />
+              ) : (
+                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+              )}
+            </button>
 
-                {/* Move to Trash */}
-                {!isTrash && !isStarred && (
-                  <button
-                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-red-600"
-                    title="Move to Trash"
-                    disabled={
-                      selectedEmails.length === 0 ||
-                      loadingAction === "move:deleted"
-                    }
-                    onClick={() => handleMove("deleted")}
-                  >
-                    {loadingAction === "move:deleted" ? (
-                      <LoadingIcon
-                        size="w-4 h-4 md:w-5 md:h-5"
-                        color="text-red-600"
-                      />
-                    ) : (
-                      <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                    )}
-                  </button>
-                )}
+            {/* Move to Inbox */}
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600 disabled:opacity-50"
+              title="Move to Inbox"
+              disabled={
+                isInbox ||
+                isSent ||
+                isDraft ||
+                isStarred ||
+                selectedEmails.length === 0 ||
+                loadingAction === "move:inbox"
+              }
+              onClick={() => handleMove("inbox")}
+            >
+              {loadingAction === "move:inbox" ? (
+                <LoadingIcon
+                  size="w-4 h-4 md:w-5 md:h-5"
+                  color="text-blue-600"
+                />
+              ) : (
+                <Inbox className="w-4 h-4 md:w-5 md:h-5" />
+              )}
+            </button>
 
-                {/* Move to Inbox */}
-                {!isInbox && !isSent && !isDraft && !isStarred && (
-                  <button
-                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-blue-600"
-                    title="Move to Inbox"
-                    disabled={
-                      selectedEmails.length === 0 ||
-                      loadingAction === "move:inbox"
-                    }
-                    onClick={() => handleMove("inbox")}
-                  >
-                    {loadingAction === "move:inbox" ? (
-                      <LoadingIcon
-                        size="w-4 h-4 md:w-5 md:h-5"
-                        color="text-blue-600"
-                      />
-                    ) : (
-                      <Inbox className="w-4 h-4 md:w-5 md:h-5" />
-                    )}
-                  </button>
-                )}
-
-                {/* Mark as Read */}
-                <button
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400"
-                  onClick={handleMarkAsRead}
-                  disabled={
-                    selectedEmails.length === 0 ||
-                    loadingAction === "markAsRead"
-                  }
-                  title="Mark as Read"
-                >
-                  {loadingAction === "markAsRead" ? (
-                    <LoadingIcon
-                      size="w-4 h-4 md:w-5 md:h-5"
-                      color="text-green-400"
-                    />
-                  ) : (
-                    <Mail className="w-4 h-4 md:w-5 md:h-5" />
-                  )}
-                </button>
-              </>
-            )}
+            {/* Mark as Read */}
+            <button
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500 hover:text-green-400 disabled:opacity-50"
+              onClick={handleMarkAsRead}
+              disabled={
+                disableMarkAsRead ||
+                selectedEmails.length === 0 ||
+                loadingAction === "markAsRead"
+              }
+              title="Mark as Read"
+            >
+              {loadingAction === "markAsRead" ? (
+                <LoadingIcon
+                  size="w-4 h-4 md:w-5 md:h-5"
+                  color="text-green-400"
+                />
+              ) : (
+                <Mail className="w-4 h-4 md:w-5 md:h-5" />
+              )}
+            </button>
           </div>
 
           {/* Compose */}
@@ -435,7 +386,6 @@ const EmailList = ({ emails, folderName }) => {
             </div>
           </div>
         ) : (
-          // RENDER EMAIL
           emails.map((email) => (
             <EmailItem
               key={email.messageId}
@@ -456,6 +406,7 @@ const EmailList = ({ emails, folderName }) => {
         isOpen={isComposeOpen}
         onClose={() => setIsComposeOpen(false)}
         draft={draftData}
+        mode={composeMode}
       />
     </div>
   );

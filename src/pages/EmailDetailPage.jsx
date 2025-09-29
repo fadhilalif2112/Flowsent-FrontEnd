@@ -81,7 +81,6 @@ const EmailDetailPage = () => {
         ${originalBody}
       `,
       },
-      rawAttachments: email.rawAttachments || [],
     });
     setIsComposeOpen(true);
     setComposeMode("forward");
@@ -123,7 +122,7 @@ const EmailDetailPage = () => {
         if (!foundEmail.seen) {
           // Optimistic UI: langsung update di frontend
           foundEmail.seen = true;
-          markAsRead(folder, foundEmail.uid).catch((err) => {
+          markAsRead(folder, foundEmail.messageId).catch((err) => {
             console.error("Failed to mark as read:", err);
             // rollback kalau gagal
             foundEmail.seen = false;

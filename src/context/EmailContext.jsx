@@ -50,15 +50,15 @@ export const EmailProvider = ({ children }) => {
     setNotification((prev) => ({ ...prev, show: false }));
   };
 
-  const fetchEmails = async () => {
+  const fetchEmails = async (forceRefresh = false) => {
     try {
       setLoading(true);
-      const data = await fetchEmailsApi();
+      const data = await fetchEmailsApi(forceRefresh);
       setEmails(data);
+      console.log("Emails fetched", forceRefresh ? "(forced)" : "(cached)");
       console.log(data);
     } catch (err) {
       setError(err.message);
-      // optional: arahkan ke login jika token invalid/expired
       navigate("/login");
     } finally {
       setLoading(false);
@@ -66,11 +66,11 @@ export const EmailProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchEmails();
+    fetchEmails(true);
   }, []);
 
   const refreshEmails = async () => {
-    await fetchEmails();
+    await fetchEmails(false);
   };
 
   const downloadAttachment = async (uid, filename) => {

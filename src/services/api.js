@@ -61,14 +61,19 @@ export const logout = async () => {
 };
 
 // FETCH ALL EMAILS
-export const fetchEmailsApi = async () => {
+export const fetchEmailsApi = async (forceRefresh = false) => {
   const token = localStorage.getItem("authToken");
 
   if (!token) {
     throw new Error("Authentication token not found. Please login again.");
   }
 
-  const res = await fetch(`${API_BASE_URL}/emails/all`, {
+  const url = new URL(`${API_BASE_URL}/emails/all`);
+  if (forceRefresh) {
+    url.searchParams.append("refresh", "true");
+  }
+
+  const res = await fetch(url.toString(), {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -123,7 +128,15 @@ export const downloadAttachmentApi = async (uid, filename) => {
 };
 
 // SEND EMAIL
-export const sendEmailApi = async ({ to, subject, body, attachments }) => {
+export const sendEmailApi = async ({
+  to,
+  subject,
+  body,
+  attachments,
+  draftId,
+  storedAttachments,
+  messageId,
+}) => {
   const token = localStorage.getItem("authToken");
 
   if (!token) {
@@ -134,6 +147,18 @@ export const sendEmailApi = async ({ to, subject, body, attachments }) => {
   formData.append("to", to);
   formData.append("subject", subject);
   formData.append("body", body);
+
+  if (draftId) {
+    formData.append("draft_id", draftId);
+  }
+
+  if (messageId) {
+    formData.append("message_id", messageId);
+  }
+
+  if (storedAttachments && storedAttachments.length > 0) {
+    formData.append("stored_attachments", JSON.stringify(storedAttachments));
+  }
 
   if (attachments && attachments.length > 0) {
     attachments.forEach((file) => {
