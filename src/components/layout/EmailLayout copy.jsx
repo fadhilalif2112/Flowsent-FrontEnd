@@ -15,8 +15,7 @@ const EmailLayout = ({ folderName, customEmails }) => {
       email.sender?.toLowerCase().includes(q) ||
       email.senderEmail?.toLowerCase().includes(q) ||
       email.subject?.toLowerCase().includes(q) ||
-      email.body?.text?.toLowerCase().includes(q) ||
-      email.timestamp?.toLowerCase().includes(q)
+      email.body?.text?.toLowerCase().includes(q)
     );
   });
 

@@ -31,7 +31,7 @@ const sidebarItems = [
   { icon: Archive, label: "Archive", key: "archive", path: "/archive" },
   { icon: CircleAlert, label: "Junk", key: "junk", path: "/junk" },
   { icon: Trash2, label: "Trash", key: "deleted", path: "/deleted" },
-]; // end of sidebarItems
+];
 
 const MainLayout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -41,11 +41,42 @@ const MainLayout = ({ children }) => {
   const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   const { searchQuery, setSearchQuery, showNotification } = useEmails();
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  // useEffect for checking mobile view
+  const [user, setUser] = useState(null);
+  const [displayName, setDisplayName] = useState("");
+
+  // Ambil data user dari localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+
+        let name = "";
+        if (parsedUser.firstName || parsedUser.lastName) {
+          name = `${parsedUser.firstName || ""} ${
+            parsedUser.lastName || ""
+          }`.trim();
+        } else if (parsedUser.email) {
+          // fallback pakai email
+          const parts = parsedUser.email.split("@")[0].split(".");
+          if (parts.length > 1) {
+            name = `${parts[0]} ${parts[1]}`;
+          } else {
+            name = parts[0];
+          }
+        }
+        setDisplayName(name);
+      } catch (err) {
+        console.error("Failed to parse user:", err);
+      }
+    }
+  }, [location]); // update setiap ganti halaman (agar sync setelah update profile)
+
+  // useEffect untuk checking mobile view
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -58,48 +89,41 @@ const MainLayout = ({ children }) => {
     checkIsMobile();
     window.addEventListener("resize", checkIsMobile);
     return () => window.removeEventListener("resize", checkIsMobile);
-  }, []); // end of useEffect
+  }, []);
 
-  // Handle sidebar toggle
   const handleSidebarToggle = () => {
     if (isMobile) {
       setMobileMenuOpen(!mobileMenuOpen);
     } else {
       setSidebarCollapsed(!sidebarCollapsed);
     }
-  }; // end of handleSidebarToggle
+  };
 
-  // Handle tab click for navigation
   const handleTabClick = (item) => {
-    // Khusus untuk Compose
     if (item.key === "compose") {
       setIsComposeOpen(true);
       return;
     }
-
     navigate(item.path);
     if (isMobile) {
       setMobileMenuOpen(false);
     }
-  }; // end of handleTabClick
+  };
 
-  // Get active tab based on current path
   const getActiveTab = () => {
     const found = sidebarItems.find((item) =>
       location.pathname.startsWith(item.path)
     );
     return found ? found.key : "";
-  }; // end of getActiveTab
+  };
 
   const activeTab = getActiveTab();
 
-  // Handle navigate to profile
   const handleProfileSettings = () => {
     setProfileOpen(false);
     navigate("/profile");
-  }; // end of handleProfileSettings
+  };
 
-  //handle logout
   const handleLogout = async () => {
     try {
       await logout();
@@ -126,7 +150,6 @@ const MainLayout = ({ children }) => {
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
-      {/* end of Mobile Overlay */}
 
       {/* Sidebar */}
       <div
@@ -153,7 +176,6 @@ const MainLayout = ({ children }) => {
                 </span>
               )}
             </div>
-            {/* Close button for mobile */}
             {isMobile && (
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -164,7 +186,6 @@ const MainLayout = ({ children }) => {
             )}
           </div>
         </div>
-        {/* end of Logo */}
 
         {/* Navigation Sidebar */}
         <nav
@@ -202,7 +223,6 @@ const MainLayout = ({ children }) => {
             </button>
           ))}
         </nav>
-        {/* end of Navigation Sidebar */}
 
         {/* Bottom Section Sidebar */}
         <div
@@ -228,9 +248,7 @@ const MainLayout = ({ children }) => {
             </button>
           )}
         </div>
-        {/* end of Bottom Section Sidebar */}
       </div>
-      {/* end of Sidebar */}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -276,15 +294,17 @@ const MainLayout = ({ children }) => {
                 <User className="w-5 h-5 text-white" />
               </div>
               <span className="hidden md:block text-gray-700 font-medium">
-                John Doe
+                {displayName || "User"}
               </span>
             </button>
 
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                 <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="font-medium text-gray-900">John Doe</p>
-                  <p className="text-sm text-gray-500">john.doe@flowsent.com</p>
+                  <p className="font-medium text-gray-900">
+                    {displayName || "User"}
+                  </p>
+                  <p className="text-sm text-gray-500">{user?.email || ""}</p>
                 </div>
                 <button
                   className="w-full text-left px-4 py-2 hover:bg-slate-200 flex items-center space-x-2 text-gray-700"
@@ -303,22 +323,19 @@ const MainLayout = ({ children }) => {
               </div>
             )}
           </div>
-          {/* end of Profile Dropdown */}
         </div>
-        {/* end of Topbar/Nav */}
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto bg-white">
           <Outlet />
         </div>
-        {/* end of Main Content */}
       </div>
+
       {/* Compose Modal */}
       <ComposeModal
         isOpen={isComposeOpen}
         onClose={() => setIsComposeOpen(false)}
       />
-      {/* end of Main Content Area */}
     </div>
   );
 };

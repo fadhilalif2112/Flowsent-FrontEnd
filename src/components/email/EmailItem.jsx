@@ -222,7 +222,7 @@ const EmailItem = ({
   const isStarredpage = folderName === "starred";
 
   // Helper: folder yang tidak support flag/mark as read
-  const disableFlags = isSent || isDraft || isTrash;
+  const disableFlags = isSent || isDraft || isTrash || isJunk;
 
   // Komponen tombol yang bisa dipakai ulang
   const renderActions = () => {

@@ -39,7 +39,7 @@ const EmailList = ({ emails, folderName }) => {
   const isStarred = folderName === "starred";
 
   // folder yang tidak support mark-as-read
-  const disableMarkAsRead = isSent || isDraft || isTrash || isJunk;
+  const disableMarkAsRead = isSent || isDraft || isTrash;
 
   const mapFolderName = (folder) => {
     if (!folder) return "inbox";
